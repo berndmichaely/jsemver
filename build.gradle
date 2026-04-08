@@ -1,0 +1,136 @@
+plugins {
+	id 'java-library'
+	id 'jacoco'
+	id 'maven-publish'
+	id 'org.checkerframework' version '1.0.2'
+}
+
+wrapper {
+	gradleVersion = '9.3.1'
+}
+
+version = '1.0.0'
+group = 'de.bernd-michaely'
+description = 'Java modular library to implement the Semantic Versioning 2.0.0 specification found at semver.org'
+
+final def javaLangVersion = JavaLanguageVersion.of(17)
+final def jvmVendor = JvmVendorSpec.ADOPTIUM
+
+final def regexSemVer = ~/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/
+if (!(version =~ regexSemVer)) throw new StopExecutionException("Invalid semantic version »${version}«")
+
+final def fileVersionShield = file("doc/shields/version.svg")
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	// Use JUnit Jupiter for testing.
+	testImplementation libs.junit.jupiter
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+checkerFramework {
+	version = libs.checker.get().version
+	checkers = [ 'org.checkerframework.checker.nullness.NullnessChecker' ]
+	excludeTests = true
+}
+
+java {
+	toolchain {
+		languageVersion = javaLangVersion
+		vendor = jvmVendor
+	}
+	withJavadocJar()
+	withSourcesJar()
+}
+tasks.withType(JavaCompile).configureEach {
+	javaCompiler = javaToolchains.compilerFor {
+		languageVersion = javaLangVersion
+		vendor = jvmVendor
+	}
+}
+tasks.withType(Test).configureEach {
+	javaLauncher = javaToolchains.launcherFor {
+		languageVersion = javaLangVersion
+		vendor = jvmVendor
+	}
+}
+tasks.withType(JavaExec).configureEach {
+	javaLauncher = javaToolchains.launcherFor {
+		languageVersion = javaLangVersion
+		vendor = jvmVendor
+	}
+}
+tasks.withType(JavaCompile) {
+	options.compilerArgs += '-Xlint:unchecked'
+	options.compilerArgs += '-Xlint:deprecation'
+	options.compilerArgs += '-Xdiags:verbose'
+	logger.lifecycle "   -> compiler args : ${options.compilerArgs}"
+}
+
+tasks.named('test') {
+	// Use JUnit Platform for unit tests.
+	useJUnitPlatform()
+}
+
+jacoco {
+	toolVersion = '0.8.14'
+}
+
+jacocoTestReport {
+	dependsOn test
+	doLast {
+		final File jacocoReportsDir = reports.html.outputLocation.asFile.get()
+		final URL jacocoReportsUrl = new URL("file", null, "${jacocoReportsDir}/index.html")
+		logger.lifecycle " -> JaCoCo reports in »${jacocoReportsUrl}«"
+	}
+}
+
+logger.lifecycle "Base dir is                 : »${file('.')}«"
+logger.lifecycle "Maven coordinates           : »${group}:${name}:${version}«"
+logger.lifecycle "Running Gradle              : ${project.gradle.gradleVersion}"
+logger.lifecycle "Java source compatibility   : ${java.sourceCompatibility}"
+logger.lifecycle "Java target compatibility   : ${java.targetCompatibility}"
+logger.lifecycle "Java toolchain              : ${java.toolchain.displayName}"
+logger.lifecycle "Compile      -> Debug-Level : ${compileJava.options.debug}"
+logger.lifecycle "Test-Compile -> Debug-Level : ${compileTestJava.options.debug}"
+logger.lifecycle "Modularity enabled          : ${java.modularity.inferModulePath.get()}"
+logger.lifecycle "Using Checker Framework     : ${checkerFramework.version.get()}"
+logger.lifecycle "Using JUnit                 : ${libs.junit.jupiter.get().version}"
+logger.lifecycle "Using JaCoCo                : ${jacoco.toolVersion}"
+
+task getVersionShield {
+	description = "Generate a version shield by accessing shields.io and write it to file »${fileVersionShield}«"
+	group = javadoc.group
+	final def toShieldParam = { it replaceAll "-", "--" replaceAll "_", "__" replaceAll "\\s", "_"  }
+	doLast {
+		final String label = toShieldParam rootProject.name
+		final String message = toShieldParam (version - ~/\+.*$/)
+		final String color = 'blue'
+		final def url = new URI("https://img.shields.io/badge/${label}-${message}-${color}").toURL()
+		logger.lifecycle "→ getting data from URL »${url}«"
+		fileVersionShield.write url.text
+	}
+}
+
+publishing {
+	publications {
+		libCommonFilesystemViewBase(MavenPublication) {
+			from components.java
+      pom {
+        name = project.name
+        description = project.description
+        url = 'https://bernd-michaely.de'
+        licenses {
+          license {
+            name = 'Apache License, Version 2.0'
+            url = 'https://www.apache.org/licenses/LICENSE-2.0.txt'
+          }
+        }
+      }
+		}
+	}
+}
+

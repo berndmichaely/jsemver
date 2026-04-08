@@ -1,0 +1,108 @@
+/*
+ * Copyright 2024 Bernd Michaely (info@bernd-michaely.de).
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package de.bernd_michaely.common.semver;
+
+import java.util.Arrays;
+import java.util.List;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
+
+/**
+ * Base class to handle a dot separated semantic version part.
+ */
+sealed public abstract class DotSeparatedVersionPart permits PreRelease, Build
+{
+	private static final String DELIMITER = "\\.";
+	private static final Identifier[] NULL = new Identifier[0];
+	private final String versionPart;
+	private Identifier[] identifiers = NULL;
+	private @MonotonicNonNull List<Identifier> listIdentifiers;
+
+	DotSeparatedVersionPart()
+	{
+		this("");
+	}
+
+	DotSeparatedVersionPart(String build)
+	{
+		this.versionPart = build;
+	}
+
+	/**
+	 * Returns true, iff this part is blank.
+	 *
+	 * @return true, iff this part is blank
+	 */
+	public boolean isBlank()
+	{
+		return versionPart.isBlank();
+	}
+
+	String getVersionPart()
+	{
+		return versionPart;
+	}
+
+	private Identifier[] getIdentifiers()
+	{
+		if (identifiers == NULL)
+		{
+			identifiers = versionPart.isBlank() ? new Identifier[0] :
+				Arrays.stream(versionPart.split(DELIMITER)).map(Identifier::new).toArray(Identifier[]::new);
+		}
+		return identifiers;
+	}
+
+	/**
+	 * Returns an unmodifiable list of the identifiers of this PreRelease.
+	 *
+	 * @return an unmodifiable list of identifiers. For an empty PreRelease, an
+	 *         empty list is returned (<em>not</em> a one element list containing
+	 *         an empty Identifier).
+	 */
+	public List<Identifier> getListIdentifiers()
+	{
+		if (listIdentifiers == null)
+		{
+			listIdentifiers = List.of(getIdentifiers());
+		}
+		return listIdentifiers;
+	}
+
+	int compareTo(DotSeparatedVersionPart other)
+	{
+		final boolean thisIsEmpty = this.versionPart.isEmpty();
+		final boolean otherIsEmpty = other.versionPart.isEmpty();
+		if (thisIsEmpty || otherIsEmpty)
+		{
+			return thisIsEmpty ? (otherIsEmpty ? 0 : 1) : -1;
+		}
+		else
+		{
+			return Arrays.compare(this.getIdentifiers(), other.getIdentifiers());
+		}
+	}
+
+	/**
+	 * Returns the original constructor parameter.
+	 *
+	 * @return the original constructor parameter
+	 */
+	@Override
+	public String toString()
+	{
+		return versionPart;
+	}
+}
