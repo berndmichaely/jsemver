@@ -11,7 +11,7 @@ var semver1 = new SemanticVersion("1.0.0-rc.9+xy");
 var semver2 = new SemanticVersion("1.0.0-rc.10");
 System.out.println("'%s' is %s than '%s'".formatted(
   semver1,
-  (semver1.compareTo(semver2) > 0) ? "greater" : "less",
+  semver1.compareTo(semver2) > 0 ? "greater" : "less",
   semver2
 ));
 ```
