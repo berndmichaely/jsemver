@@ -2,7 +2,7 @@
 
 [versions]
 junit-jupiter = "6.0.1"
-checker = "3.55.1"
+checker = "4.0.0"
 
 [libraries]
 junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit-jupiter" }
