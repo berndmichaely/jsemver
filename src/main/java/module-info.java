@@ -15,7 +15,7 @@
  */
 
 /**
- * Java modular library to implement the Semantic Versioning 2.0.0 specification.
+ * Java library module to implement the Semantic Versioning 2.0.0 specification.
  *
  * @see <a href="https://semver.org">semver.org</a>
  * @author Bernd Michaely (info@bernd-michaely.de)
