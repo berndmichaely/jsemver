@@ -199,6 +199,7 @@ jreleaser {
 			repoOwner = 'berndmichaely'
 			host = 'github.com'
 			username = 'berndmichaely'
+			overwrite = true
 		}
 	}
 }
