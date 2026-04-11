@@ -66,9 +66,10 @@ sealed public abstract class DotSeparatedVersionPart permits PreRelease, Build
 	}
 
 	/**
-	 * Returns an unmodifiable list of the identifiers of this PreRelease.
+	 * Returns an unmodifiable list of the identifiers of this version part
+	 * (PreRelease or Build).
 	 *
-	 * @return an unmodifiable list of identifiers. For an empty PreRelease, an
+	 * @return an unmodifiable list of identifiers. For an empty version part, an
 	 *         empty list is returned (<em>not</em> a one element list containing
 	 *         an empty Identifier).
 	 */
