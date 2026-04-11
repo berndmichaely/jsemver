@@ -24,22 +24,26 @@ public class Identifier implements Comparable<Identifier>
 {
 	private static final int NO_NUMBER = -1;
 	private final String part;
-	private boolean isNumeric;
-	private int number;
+	private final boolean isNumeric;
+	private final int number;
 
 	Identifier(String part)
 	{
 		this.part = part;
+		boolean _numeric;
+		int _number;
 		try
 		{
-			number = Integer.parseInt(part);
-			isNumeric = true;
+			_number = Integer.parseInt(part);
+			_numeric = true;
 		}
 		catch (NumberFormatException ex)
 		{
-			number = NO_NUMBER;
-			isNumeric = false;
+			_number = NO_NUMBER;
+			_numeric = false;
 		}
+		this.isNumeric = _numeric;
+		this.number = _number;
 	}
 
 	/**

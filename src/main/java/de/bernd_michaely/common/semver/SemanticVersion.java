@@ -61,8 +61,8 @@ public class SemanticVersion implements Comparable<SemanticVersion>
 	 * Creates a new instance.
 	 *
 	 * @param semanticVersion a String containing a semantic version
-	 * @throws IllegalArgumentException if the given semantic version String is
-	 *                                  invalid (including null)
+	 * @throws InvalidSemanticVersionException if the given semantic version
+	 *                                         String is invalid (including null)
 	 */
 	public SemanticVersion(String semanticVersion)
 	{
@@ -85,8 +85,7 @@ public class SemanticVersion implements Comparable<SemanticVersion>
 		}
 		else
 		{
-			throw new IllegalArgumentException(
-				"»" + semanticVersion + "« is not a valid Semantic Version String");
+			throw new InvalidSemanticVersionException(semanticVersion);
 		}
 	}
 
@@ -216,6 +215,9 @@ public class SemanticVersion implements Comparable<SemanticVersion>
 	@Override
 	public int hashCode()
 	{
+		// Note:
+		// 'build' must not go into hashCode,
+		// since it is not partof the linear ordering
 		return Objects.hash(major, minor, patch, preRelease);
 	}
 
@@ -223,6 +225,7 @@ public class SemanticVersion implements Comparable<SemanticVersion>
 	 * Returns a more verbose string than the canonical form.
 	 *
 	 * @return a more verbose string than the canonical form
+	 * @see #toString()
 	 */
 	public String getDescription()
 	{

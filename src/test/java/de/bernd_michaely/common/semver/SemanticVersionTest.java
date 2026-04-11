@@ -100,25 +100,25 @@ public class SemanticVersionTest
 		assertDoesNotThrow(() -> new SemanticVersion("1.0.0-0a0"));
 		final SemanticVersion sv1 = new SemanticVersion("1.0.0-Hello-World");
 		assertDoesNotThrow(() -> sv1);
-		assertEquals(1, sv1.getPreRelease().getListIdentifiers().size());
-		assertEquals("Hello-World", sv1.getPreRelease().getListIdentifiers().get(0).toString());
+		assertEquals(1, sv1.getPreRelease().getIdentifiers().size());
+		assertEquals("Hello-World", sv1.getPreRelease().getIdentifiers().get(0).toString());
 		final SemanticVersion sv2 = new SemanticVersion("1.0.0+r17-rc.1");
 		assertDoesNotThrow(() -> sv2);
-		assertTrue(sv2.getPreRelease().getListIdentifiers().isEmpty());
+		assertTrue(sv2.getPreRelease().getIdentifiers().isEmpty());
 		assertEquals("r17-rc.1", sv2.getBuild().toString());
 		final SemanticVersion sv3 = new SemanticVersion("1.0.0+-");
 		assertDoesNotThrow(() -> sv3);
-		assertTrue(sv3.getPreRelease().getListIdentifiers().isEmpty());
+		assertTrue(sv3.getPreRelease().getIdentifiers().isEmpty());
 		assertEquals("-", sv3.getBuild().toString());
 		final SemanticVersion sv4 = new SemanticVersion("1.0.0--");
 		assertDoesNotThrow(() -> sv4);
-		assertEquals(1, sv4.getPreRelease().getListIdentifiers().size());
-		assertEquals("-", sv4.getPreRelease().getListIdentifiers().get(0).toString());
+		assertEquals(1, sv4.getPreRelease().getIdentifiers().size());
+		assertEquals("-", sv4.getPreRelease().getIdentifiers().get(0).toString());
 		final SemanticVersion sv5 = new SemanticVersion("1.0.0-0-0");
 		assertDoesNotThrow(() -> sv5);
-		assertEquals(1, sv5.getPreRelease().getListIdentifiers().size());
-		assertEquals("0-0", sv5.getPreRelease().getListIdentifiers().get(0).toString());
-		assertEquals(2, new SemanticVersion("1.0.0-0.0").getPreRelease().getListIdentifiers().size());
+		assertEquals(1, sv5.getPreRelease().getIdentifiers().size());
+		assertEquals("0-0", sv5.getPreRelease().getIdentifiers().get(0).toString());
+		assertEquals(2, new SemanticVersion("1.0.0-0.0").getPreRelease().getIdentifiers().size());
 		assertEquals(new SemanticVersion(), new SemanticVersion("0.0.0-0"));
 		assertEquals(new SemanticVersion(0, 0, 0, new PreRelease(),
 			new Build()), version0);
@@ -126,8 +126,8 @@ public class SemanticVersionTest
 		assertDoesNotThrow(() -> sv6);
 		final Build build6 = sv6.getBuild();
 		assertFalse(build6.isBlank());
-		assertEquals(1, build6.getListIdentifiers().size());
-		final Identifier id6 = build6.getListIdentifiers().get(0);
+		assertEquals(1, build6.getIdentifiers().size());
+		final Identifier id6 = build6.getIdentifiers().get(0);
 		assertTrue(id6.isNumeric());
 		assertEquals(1, id6.getNumber());
 		assertEquals("001", id6.toString());
@@ -156,8 +156,19 @@ public class SemanticVersionTest
 			"1.0.0+.",
 			"1.0.0-a..b",
 			"1.0.0+a..b"
-		).forEach(version ->
-			assertThrows(IllegalArgumentException.class, () -> new SemanticVersion(version)));
+		).forEach(version -> assertThrowsExactly(InvalidSemanticVersionException.class, () ->
+		{
+			try
+			{
+				new SemanticVersion(version);
+			}
+			catch (InvalidSemanticVersionException ex)
+			{
+				assertEquals(version, ex.getInvalidArgument());
+				throw ex;
+			}
+		},
+			InvalidSemanticVersionException.formatMessage(version)));
 	}
 
 	private void test_Identifiers(List<Identifier> identifiers)
@@ -177,13 +188,13 @@ public class SemanticVersionTest
 	@Test
 	public void test_PreRelease()
 	{
-		test_Identifiers(new SemanticVersion("1.2.3-5.b.7").getPreRelease().getListIdentifiers());
+		test_Identifiers(new SemanticVersion("1.2.3-5.b.7").getPreRelease().getIdentifiers());
 	}
 
 	@Test
 	public void test_Build()
 	{
-		test_Identifiers(new SemanticVersion("1.2.3+5.b.7").getBuild().getListIdentifiers());
+		test_Identifiers(new SemanticVersion("1.2.3+5.b.7").getBuild().getIdentifiers());
 	}
 
 	@Test
@@ -241,6 +252,7 @@ public class SemanticVersionTest
 		assertEquals(sv1.getPreRelease().toString(), sv1.getBuild().toString());
 		assertFalse(sv1.getPreRelease().equals(sv1.getBuild()));
 		assertFalse(sv1.getBuild().equals(sv1.getPreRelease()));
+		assertThrows(NullPointerException.class, () -> new SemanticVersion().compareTo(null));
 	}
 
 	@Test

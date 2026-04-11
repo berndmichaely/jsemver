@@ -35,9 +35,9 @@ sealed public abstract class DotSeparatedVersionPart permits PreRelease, Build
 		this("");
 	}
 
-	DotSeparatedVersionPart(String build)
+	DotSeparatedVersionPart(String versionPart)
 	{
-		this.versionPart = build;
+		this.versionPart = versionPart != null ? versionPart : "";
 	}
 
 	/**
@@ -55,7 +55,7 @@ sealed public abstract class DotSeparatedVersionPart permits PreRelease, Build
 		return versionPart;
 	}
 
-	private Identifier[] getIdentifiers()
+	private Identifier[] identifiers()
 	{
 		if (identifiers == NULL)
 		{
@@ -72,12 +72,27 @@ sealed public abstract class DotSeparatedVersionPart permits PreRelease, Build
 	 * @return an unmodifiable list of identifiers. For an empty version part, an
 	 *         empty list is returned (<em>not</em> a one element list containing
 	 *         an empty Identifier).
+	 * @deprecated use {@link #getIdentifiers()} instead
 	 */
+	@Deprecated
 	public List<Identifier> getListIdentifiers()
+	{
+		return getIdentifiers();
+	}
+
+	/**
+	 * Returns an unmodifiable list of the identifiers of this version part
+	 * (PreRelease or Build).
+	 *
+	 * @return an unmodifiable list of identifiers. For an empty version part, an
+	 *         empty list is returned.
+	 * @since 1.0.1
+	 */
+	public List<Identifier> getIdentifiers()
 	{
 		if (listIdentifiers == null)
 		{
-			listIdentifiers = List.of(getIdentifiers());
+			listIdentifiers = List.of(identifiers());
 		}
 		return listIdentifiers;
 	}
@@ -92,7 +107,7 @@ sealed public abstract class DotSeparatedVersionPart permits PreRelease, Build
 		}
 		else
 		{
-			return Arrays.compare(this.getIdentifiers(), other.getIdentifiers());
+			return Arrays.compare(this.identifiers(), other.identifiers());
 		}
 	}
 
