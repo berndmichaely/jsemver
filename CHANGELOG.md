@@ -1,5 +1,9 @@
 # ChangeLog for jsemver library
 
+## v1.0.2
+
+  * improved exception handling (i18n)
+
 ## v1.0.1
 
   * deprecated method `DotSeparatedVersionPart::getListIdentifiers`
