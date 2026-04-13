@@ -184,6 +184,15 @@ jreleaser {
 	}
 	deploy {
 		maven {
+			github {
+				app {
+					// active = 'ALWAYS'
+					active = 'RELEASE'
+					// stagingRepository('target/staging-deploy')
+					stagingRepository('build/staging-deploy')
+					applyMavenCentralRules = true
+				}
+			}
 			mavenCentral {
 				sonatype {
 					active = 'ALWAYS'
@@ -197,10 +206,19 @@ jreleaser {
 	release {
 		github {
 			repoOwner = 'berndmichaely'
+			name = rootProject.name
 			host = 'github.com'
 			username = 'berndmichaely'
 			sign = true
 			overwrite = true
+			commitAuthor {
+				name = 'berndmichaely'
+				email = 'info@bernd-michaely.de'
+			}
 		}
+	}
+	upload {
+		// active = 'ALWAYS'
+		active = 'RELEASE'
 	}
 }
