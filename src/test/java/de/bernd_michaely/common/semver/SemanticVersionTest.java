@@ -235,12 +235,16 @@ public class SemanticVersionTest
 	@Test
 	public void test_PreRelease()
 	{
+		assertTrue(new PreRelease(null).isBlank());
+		assertTrue(new PreRelease("").isBlank());
 		test_Identifiers(new SemanticVersion("1.2.3-5.b.7").getPreRelease().getIdentifiers());
 	}
 
 	@Test
 	public void test_Build()
 	{
+		assertTrue(new Build(null).isBlank());
+		assertTrue(new Build("").isBlank());
 		test_Identifiers(new SemanticVersion("1.2.3+5.b.7").getBuild().getIdentifiers());
 	}
 

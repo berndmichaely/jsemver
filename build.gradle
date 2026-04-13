@@ -10,7 +10,7 @@ wrapper {
 	gradleVersion = '9.3.1'
 }
 
-version = '1.0.2'
+version = '2.0.0'
 group = 'de.bernd-michaely'
 description = 'Java modular library to implement the Semantic Versioning 2.0.0 specification found at semver.org'
 

@@ -70,21 +70,6 @@ sealed public abstract class DotSeparatedVersionPart permits PreRelease, Build
 	 * (PreRelease or Build).
 	 *
 	 * @return an unmodifiable list of identifiers. For an empty version part, an
-	 *         empty list is returned (<em>not</em> a one element list containing
-	 *         an empty Identifier).
-	 * @deprecated use {@link #getIdentifiers()} instead
-	 */
-	@Deprecated
-	public List<Identifier> getListIdentifiers()
-	{
-		return getIdentifiers();
-	}
-
-	/**
-	 * Returns an unmodifiable list of the identifiers of this version part
-	 * (PreRelease or Build).
-	 *
-	 * @return an unmodifiable list of identifiers. For an empty version part, an
 	 *         empty list is returned.
 	 * @since 1.0.1
 	 */
