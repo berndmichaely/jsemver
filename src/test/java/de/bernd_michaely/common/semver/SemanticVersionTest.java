@@ -18,6 +18,7 @@ package de.bernd_michaely.common.semver;
 import java.util.Comparator;
 import java.util.List;
 import java.util.TreeSet;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 
 import static java.util.stream.Collectors.toCollection;
@@ -136,7 +137,8 @@ public class SemanticVersionTest
 	@Test
 	public void test_invalid_version_strings()
 	{
-		List.of(
+		Stream.of(
+			null,
 			"",
 			"1",
 			"1.",
@@ -165,10 +167,55 @@ public class SemanticVersionTest
 			catch (InvalidSemanticVersionException ex)
 			{
 				assertEquals(version, ex.getInvalidArgument());
+				final String msg = InvalidSemanticVersionException.DEFAULT_MSG_FORMAT.formatted(version);
+				System.out.println("· " + msg);
+				assertEquals(msg, ex.getMessage());
+				assertEquals(msg, ex.getLocalizedMessage());
 				throw ex;
 			}
-		},
-			InvalidSemanticVersionException.formatMessage(version)));
+		}));
+	}
+
+	@Test
+	public void test_invalid_version_strings_localized()
+	{
+		final String msgTemplate = "Invalid SemVer : »%s«";
+		Stream.of(
+			null,
+			"",
+			"1",
+			"1.",
+			"1.0",
+			"1.0.",
+			"-1.0.0",
+			"1.x.y",
+			"1.0.0- 0",
+			"1.0.0 -0",
+			"1.0.0-00",
+			"1.0.0-01",
+			"1.0.0-a.00",
+			"1.0.0-a.01",
+			"x1.0.0",
+			"1.0.0y",
+			"1.0.0-.",
+			"1.0.0+.",
+			"1.0.0-a..b",
+			"1.0.0+a..b"
+		).forEach(version -> assertThrowsExactly(InvalidSemanticVersionException.class, () ->
+		{
+			try
+			{
+				new SemanticVersion(version, s -> msgTemplate.formatted(s));
+			}
+			catch (InvalidSemanticVersionException ex)
+			{
+				assertEquals(version, ex.getInvalidArgument());
+				assertEquals(InvalidSemanticVersionException.DEFAULT_MSG_FORMAT.formatted(version),
+					ex.getMessage());
+				assertEquals(msgTemplate.formatted(version), ex.getLocalizedMessage());
+				throw ex;
+			}
+		}));
 	}
 
 	private void test_Identifiers(List<Identifier> identifiers)

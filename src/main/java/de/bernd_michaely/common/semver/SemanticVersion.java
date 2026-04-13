@@ -17,6 +17,7 @@ package de.bernd_michaely.common.semver;
 
 import java.util.Comparator;
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -50,7 +51,8 @@ public class SemanticVersion implements Comparable<SemanticVersion>
 	private final Build build;
 
 	/**
-	 * Returns a default instance with the smallest possible semantic version.
+	 * Creates a default instance with a canonical semantic version. The value is
+	 * the smallest possible semantic version.
 	 */
 	public SemanticVersion()
 	{
@@ -58,13 +60,31 @@ public class SemanticVersion implements Comparable<SemanticVersion>
 	}
 
 	/**
-	 * Creates a new instance.
+	 * Creates a new instance for a given semantic version string.
 	 *
 	 * @param semanticVersion a String containing a semantic version
 	 * @throws InvalidSemanticVersionException if the given semantic version
 	 *                                         String is invalid (including null)
 	 */
 	public SemanticVersion(String semanticVersion)
+	{
+		this(semanticVersion, null);
+	}
+
+	/**
+	 * Creates a new instance.
+	 *
+	 * @param semanticVersion       a String containing a semantic version
+	 * @param exceptionMsgFormatter function from an invalid semanticVersion
+	 *                              argument String to a localized
+	 *                              InvalidSemanticVersionException message. Can
+	 *                              be {@code null} to use the default formatting
+	 * @throws InvalidSemanticVersionException if the given semantic version
+	 *                                         String is invalid (including null)
+	 * @since 1.0.2
+	 */
+	public SemanticVersion(String semanticVersion,
+		@Nullable Function<String, String> exceptionMsgFormatter)
 	{
 		final var matcher = getRegExSemanticVersion().matcher(requireNonNullElse(semanticVersion, ""));
 		if (matcher.matches())
@@ -85,7 +105,7 @@ public class SemanticVersion implements Comparable<SemanticVersion>
 		}
 		else
 		{
-			throw new InvalidSemanticVersionException(semanticVersion);
+			throw new InvalidSemanticVersionException(semanticVersion, exceptionMsgFormatter);
 		}
 	}
 

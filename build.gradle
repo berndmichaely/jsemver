@@ -10,7 +10,7 @@ wrapper {
 	gradleVersion = '9.3.1'
 }
 
-version = '1.0.1'
+version = '1.0.2'
 group = 'de.bernd-michaely'
 description = 'Java modular library to implement the Semantic Versioning 2.0.0 specification found at semver.org'
 
@@ -186,9 +186,8 @@ jreleaser {
 		maven {
 			github {
 				app {
-					// active = 'ALWAYS'
-					active = 'RELEASE'
-					// stagingRepository('target/staging-deploy')
+					// active = 'RELEASE'
+					active = 'ALWAYS'
 					stagingRepository('build/staging-deploy')
 					applyMavenCentralRules = true
 				}
@@ -214,11 +213,11 @@ jreleaser {
 			commitAuthor {
 				name = 'berndmichaely'
 				email = 'info@bernd-michaely.de'
-			}
+		}
 		}
 	}
 	upload {
-		// active = 'ALWAYS'
-		active = 'RELEASE'
+		// active = 'RELEASE'
+		active = 'ALWAYS'
 	}
 }
