@@ -10,7 +10,7 @@ wrapper {
 	gradleVersion = '9.3.1'
 }
 
-version = '2.0.0'
+version = '2.0.0-ea'
 group = 'de.bernd-michaely'
 description = 'Java modular library to implement the Semantic Versioning 2.0.0 specification found at semver.org'
 
@@ -90,23 +90,23 @@ jacocoTestReport {
 	}
 }
 
-final Map<String, String> _map = new LinkedHashMap<>()
-_map.put ("Project »${name}«", "${description}")
+final Map<String, ?> _map = new LinkedHashMap<>()
+_map.put ("Project »${name}«", description)
 _map.put ("Maven coordinates", "»${group}:${name}:${version}«")
 _map.put ("Base dir is", "»${file('.')}«")
-_map.put ("Running Gradle", "${project.gradle.gradleVersion}")
-_map.put ("Java source compatibility", "${java.sourceCompatibility}")
-_map.put ("Java target compatibility", "${java.targetCompatibility}")
-_map.put ("Java toolchain", "${java.toolchain.displayName}")
-_map.put ("Compile -> Debug-Level", "${compileJava.options.debug}")
-_map.put ("Test-Compile -> Debug-Level", "${compileTestJava.options.debug}")
-_map.put ("Modularity enabled", "${java.modularity.inferModulePath.get()}")
-_map.put ("Using Checker Framework", "${checkerFramework.version.get()}")
-_map.put ("Using JUnit", "${libs.junit.jupiter.get().version}")
-_map.put ("Using JaCoCo", "${jacoco.toolVersion}")
+_map.put ("Running Gradle", project.gradle.gradleVersion)
+_map.put ("Java source compatibility", java.sourceCompatibility)
+_map.put ("Java target compatibility", java.targetCompatibility)
+_map.put ("Java toolchain", java.toolchain.displayName)
+_map.put ("Compile -> Debug-Level", compileJava.options.debug)
+_map.put ("Test-Compile -> Debug-Level", compileTestJava.options.debug)
+_map.put ("Modularity enabled", java.modularity.inferModulePath.get())
+_map.put ("Using Checker Framework", checkerFramework.version.get())
+_map.put ("Using JUnit", libs.junit.jupiter.get().version)
+_map.put ("Using JaCoCo", jacoco.toolVersion)
 
 final int maxLenKey   = _map.keySet().stream().mapToInt(s->s.length()).max().orElse(0)
-final int maxLenValue = _map.values().stream().mapToInt(s->s.length()).max().orElse(0)
+final int maxLenValue = _map.values().stream().mapToInt(s->(""+s).length()).max().orElse(0)
 final int maxLenLine = maxLenKey + 3 + maxLenValue
 final def _line = "-" * (4 + maxLenLine)
 
