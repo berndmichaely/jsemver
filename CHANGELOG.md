@@ -2,6 +2,11 @@
 
 ## v2.0.0
 
+  * added methods:
+     + Build::of
+     + Identifier::of
+     + PreRelease::of
+     + SemanticVersion::check
   * removed deprecated methods
 
 ## v1.0.2
