@@ -1,8 +1,8 @@
-# jsemver
+# JSemVer
 
 ![doc/shields/version.svg](doc/shields/version.svg)
 
-**jsemver** is a modular Java library to implement the Semantic Versioning 2.0.0 specification found at [semver.org](https://semver.org/).
+**JSemVer** is a modular Java library to implement the Semantic Versioning 2.0.0 specification found at [semver.org](https://semver.org/).
 
 It is available at maven coordinates:
 
