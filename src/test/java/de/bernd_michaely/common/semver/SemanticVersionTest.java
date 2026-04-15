@@ -15,12 +15,14 @@
  */
 package de.bernd_michaely.common.semver;
 
+import de.bernd_michaely.common.semver.SemanticVersion.SubRegEx;
 import java.util.Comparator;
 import java.util.List;
 import java.util.TreeSet;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 
+import static de.bernd_michaely.common.semver.SemanticVersion.STR_REGEX_SEMANTIC_VERSION;
 import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toUnmodifiableList;
 import static org.junit.jupiter.api.Assertions.*;
@@ -132,6 +134,8 @@ public class SemanticVersionTest
 		assertTrue(id6.isNumeric());
 		assertEquals(1, id6.getNumber());
 		assertEquals("001", id6.toString());
+		assertTrue(SemanticVersion.check("1.0.0"));
+		assertFalse(SemanticVersion.check("x.y.z"));
 	}
 
 	@Test
@@ -232,20 +236,60 @@ public class SemanticVersionTest
 		assertEquals("7", identifiers.get(2).toString());
 	}
 
+	private void printlnSubRegEx(SubRegEx subRegEx)
+	{
+		System.out.println(("%" + subRegEx.endIndex + "s").formatted(subRegEx.toString()));
+	}
+
+	@Test
+	public void test_Identifier()
+	{
+		assertEquals(new Identifier("1"), Identifier.of("1", Identifier.Type.PRE_RELEASE));
+		assertEquals(new Identifier("abc"), Identifier.of("abc", Identifier.Type.PRE_RELEASE));
+		assertEquals(new Identifier("1"), Identifier.of("1", Identifier.Type.BUILD));
+		assertEquals(new Identifier("xyz"), Identifier.of("xyz", Identifier.Type.BUILD));
+		assertTrue(new Identifier("RC").equalsIgnoreCase(Identifier.of("rc", Identifier.Type.PRE_RELEASE)));
+		assertFalse(new Identifier("RC").equalsIgnoreCase(Identifier.of("7", Identifier.Type.BUILD)));
+		assertThrows(InvalidSemanticVersionException.class,
+			() -> Identifier.of("#", Identifier.Type.PRE_RELEASE, s -> "~" + s), "~#");
+		assertThrows(InvalidSemanticVersionException.class,
+			() -> Identifier.of("#", Identifier.Type.BUILD, s -> "~" + s), "~#");
+	}
+
 	@Test
 	public void test_PreRelease()
 	{
+		System.out.println("RegEx SemanticVersion PreRelease parts:");
+		System.out.println(STR_REGEX_SEMANTIC_VERSION);
+		printlnSubRegEx(SubRegEx.STR_REGEX_PRE_RELEASE);
+		printlnSubRegEx(SubRegEx.STR_REGEX_ID_PRE_RELEASE);
+		System.out.println();
 		assertTrue(new PreRelease(null).isBlank());
 		assertTrue(new PreRelease("").isBlank());
 		test_Identifiers(new SemanticVersion("1.2.3-5.b.7").getPreRelease().getIdentifiers());
+		assertThrows(InvalidSemanticVersionException.class, () -> PreRelease.of("abc"));
+		assertThrows(InvalidSemanticVersionException.class, () -> PreRelease.of("+abc"));
+		assertThrows(InvalidSemanticVersionException.class,
+			() -> PreRelease.of("abc", s -> "~" + s), "~abc");
+		assertEquals(new PreRelease("-abc.2.def"), PreRelease.of("-abc.2.def"));
 	}
 
 	@Test
 	public void test_Build()
 	{
+		System.out.println("RegEx SemanticVersion Build parts:");
+		System.out.println(STR_REGEX_SEMANTIC_VERSION);
+		printlnSubRegEx(SubRegEx.STR_REGEX_BUILD);
+		printlnSubRegEx(SubRegEx.STR_REGEX_ID_BUILD);
+		System.out.println();
 		assertTrue(new Build(null).isBlank());
 		assertTrue(new Build("").isBlank());
 		test_Identifiers(new SemanticVersion("1.2.3+5.b.7").getBuild().getIdentifiers());
+		assertThrows(InvalidSemanticVersionException.class, () -> Build.of("xyz"));
+		assertThrows(InvalidSemanticVersionException.class, () -> Build.of("-xyz"));
+		assertThrows(InvalidSemanticVersionException.class,
+			() -> Build.of("xyz", s -> "~" + s), "~xyz");
+		assertEquals(new Build("+uvw.2.xyz"), Build.of("+uvw.2.xyz"));
 	}
 
 	@Test

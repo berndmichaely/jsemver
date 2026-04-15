@@ -27,7 +27,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 public final class InvalidSemanticVersionException extends IllegalArgumentException
 {
 	static final String DEFAULT_MSG_FORMAT =
-		"»%s« is not a valid Semantic Version " + SemanticVersion.getSupportedVersion() + " String";
+		"»%s« is not a valid Semantic Version " + SemanticVersion.getSupportedVersion() + " argument";
 	/**
 	 * Holds the invalid SemanticVersion constructor argument.
 	 */

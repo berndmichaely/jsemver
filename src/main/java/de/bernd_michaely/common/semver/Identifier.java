@@ -15,7 +15,13 @@
  */
 package de.bernd_michaely.common.semver;
 
+import java.util.EnumMap;
+import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.checkerframework.checker.nullness.qual.Nullable;
+
+import static java.util.Objects.requireNonNullElse;
 
 /**
  * Class to describe dot separated version identifier parts.
@@ -26,6 +32,22 @@ public class Identifier implements Comparable<Identifier>
 	private final String part;
 	private final boolean isNumeric;
 	private final int number;
+
+	/**
+	 * Type of Identifier.
+	 */
+	public enum Type
+	{
+		/**
+		 * Pre-Release Identifier.
+		 */
+		PRE_RELEASE,
+		/**
+		 * Build Identifier.
+		 */
+		BUILD
+	}
+	private static EnumMap<Type, Pattern> mapPattern = new EnumMap<>(Type.class);
 
 	Identifier(String part)
 	{
@@ -44,6 +66,59 @@ public class Identifier implements Comparable<Identifier>
 		}
 		this.isNumeric = _numeric;
 		this.number = _number;
+	}
+
+	private static Matcher getMatcher(String identifier, Type type)
+	{
+		return mapPattern.computeIfAbsent(type, t -> Pattern.compile(switch (t)
+		{
+			case PRE_RELEASE ->
+				SemanticVersion.SubRegEx.STR_REGEX_ID_PRE_RELEASE.toString();
+			case BUILD ->
+				SemanticVersion.SubRegEx.STR_REGEX_ID_BUILD.toString();
+		})).matcher(requireNonNullElse(identifier, ""));
+	}
+
+	/**
+	 * Creates a new instance of the given String.
+	 *
+	 * @param identifier a semantic version identifier String
+	 * @param type       the identifier type
+	 * @return a new instance
+	 * @throws InvalidSemanticVersionException if the given identifier String is
+	 *                                         invalid (including null)
+	 * @since 2.0.0
+	 */
+	public static Identifier of(String identifier, Type type)
+	{
+		return of(identifier, type, null);
+	}
+
+	/**
+	 * Creates a new instance of the given String.
+	 *
+	 * @param identifier            a semantic version identifier String
+	 * @param type                  the identifier type
+	 * @param exceptionMsgFormatter function from an invalid identifier argument
+	 *                              String to a localized
+	 *                              InvalidSemanticVersionException message. Can
+	 *                              be {@code null} to use the default formatting
+	 * @return a new instance
+	 * @throws InvalidSemanticVersionException if the given identifier String is
+	 *                                         invalid (including null)
+	 * @since 2.0.0
+	 */
+	public static Identifier of(String identifier, Type type,
+		@Nullable Function<String, String> exceptionMsgFormatter)
+	{
+		if (getMatcher(identifier, type).matches())
+		{
+			return new Identifier(identifier);
+		}
+		else
+		{
+			throw new InvalidSemanticVersionException(identifier, exceptionMsgFormatter);
+		}
 	}
 
 	/**
@@ -103,6 +178,17 @@ public class Identifier implements Comparable<Identifier>
 	public int hashCode()
 	{
 		return part.hashCode();
+	}
+
+	/**
+	 * Compares two identifiers ignoring case.
+	 *
+	 * @param other the other Identifier
+	 * @return true, iff both identifiers are equal ignoring case
+	 */
+	public boolean equalsIgnoreCase(Identifier other)
+	{
+		return this.part.equalsIgnoreCase(other.part);
 	}
 
 	/**

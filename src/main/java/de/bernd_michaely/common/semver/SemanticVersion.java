@@ -18,11 +18,11 @@ package de.bernd_michaely.common.semver;
 import java.util.Comparator;
 import java.util.Objects;
 import java.util.function.Function;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-import static java.lang.Integer.parseInt;
 import static java.util.Objects.requireNonNullElse;
 
 /**
@@ -42,7 +42,29 @@ public class SemanticVersion implements Comparable<SemanticVersion>
 	 */
 	public static final String STR_REGEX_SEMANTIC_VERSION =
 		"^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$";
-	private static @MonotonicNonNull Pattern REGEX_SEMANTIC_VERSION;
+	private static @MonotonicNonNull Pattern patternSemVer;
+
+	enum SubRegEx
+	{
+		STR_REGEX_PRE_RELEASE(44, 134),
+		STR_REGEX_ID_PRE_RELEASE(49, 85),
+		STR_REGEX_BUILD(139, 176),
+		STR_REGEX_ID_BUILD(142, 155);
+
+		final int beginIndex, endIndex;
+
+		SubRegEx(int startIndex, int endIndex)
+		{
+			this.beginIndex = startIndex;
+			this.endIndex = endIndex;
+		}
+
+		@Override
+		public String toString()
+		{
+			return STR_REGEX_SEMANTIC_VERSION.substring(beginIndex, endIndex);
+		}
+	}
 
 	private final int major;
 	private final int minor;
@@ -86,22 +108,14 @@ public class SemanticVersion implements Comparable<SemanticVersion>
 	public SemanticVersion(String semanticVersion,
 		@Nullable Function<String, String> exceptionMsgFormatter)
 	{
-		final var matcher = getRegExSemanticVersion().matcher(requireNonNullElse(semanticVersion, ""));
+		final var matcher = getMatcher(semanticVersion);
 		if (matcher.matches())
 		{
-			try
-			{
-				this.major = parseInt(requireNonNullElse(matcher.group(1), ""));
-				this.minor = parseInt(requireNonNullElse(matcher.group(2), ""));
-				this.patch = parseInt(requireNonNullElse(matcher.group(3), ""));
-				this.preRelease = new PreRelease(requireNonNullElse(matcher.group(4), ""));
-				this.build = new Build(requireNonNullElse(matcher.group(5), ""));
-			}
-			catch (NumberFormatException ex)
-			{
-				// can never happen after regex matches
-				throw new IllegalStateException(ex);
-			}
+			this.major = parseInt(matcher.group(1));
+			this.minor = parseInt(matcher.group(2));
+			this.patch = parseInt(matcher.group(3));
+			this.preRelease = new PreRelease(matcher.group(4));
+			this.build = new Build(matcher.group(5));
 		}
 		else
 		{
@@ -116,6 +130,13 @@ public class SemanticVersion implements Comparable<SemanticVersion>
 		this.patch = patch;
 		this.preRelease = preRelease != null ? preRelease : new PreRelease();
 		this.build = build != null ? build : new Build();
+	}
+
+	@SuppressWarnings("argument")
+	private static int parseInt(@Nullable String s)
+	{
+		// a null argument will throw a NumberFormatException, not a NPE
+		return Integer.parseInt(s);
 	}
 
 	/**
@@ -182,19 +203,25 @@ public class SemanticVersion implements Comparable<SemanticVersion>
 		return build;
 	}
 
-	/**
-	 * Returns a semantic versioning regex pattern.
-	 *
-	 * @return a semantic versioning regex pattern
-	 * @see #REGEX_SEMANTIC_VERSION
-	 */
-	private static Pattern getRegExSemanticVersion()
+	private static Matcher getMatcher(String semanticVersion)
 	{
-		if (REGEX_SEMANTIC_VERSION == null)
+		if (patternSemVer == null)
 		{
-			REGEX_SEMANTIC_VERSION = Pattern.compile(STR_REGEX_SEMANTIC_VERSION);
+			patternSemVer = Pattern.compile(STR_REGEX_SEMANTIC_VERSION);
 		}
-		return REGEX_SEMANTIC_VERSION;
+		return patternSemVer.matcher(requireNonNullElse(semanticVersion, ""));
+	}
+
+	/**
+	 * Returns true, iff the argument is a valid semantic version.
+	 *
+	 * @param semanticVersion the argument to check
+	 * @return true, iff the argument is a valid semantic version
+	 * @since 2.0.0
+	 */
+	public static boolean check(String semanticVersion)
+	{
+		return getMatcher(semanticVersion).matches();
 	}
 
 	private static final Comparator<SemanticVersion> semanticVersionComparator =

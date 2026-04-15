@@ -15,21 +15,79 @@
  */
 package de.bernd_michaely.common.semver;
 
+import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+
+import static java.util.Objects.requireNonNullElse;
 
 /**
  * Class to handle a semantic version pre-release.
  */
 public final class PreRelease extends DotSeparatedVersionPart implements Comparable<PreRelease>
 {
+	private static @MonotonicNonNull Pattern patternPreRelease;
+
 	PreRelease()
 	{
 		super();
 	}
 
-	PreRelease(String preRelease)
+	PreRelease(@Nullable String preRelease)
 	{
 		super(preRelease);
+	}
+
+	private static Matcher getMatcher(String preRelease)
+	{
+		if (patternPreRelease == null)
+		{
+			patternPreRelease = Pattern.compile(
+				SemanticVersion.SubRegEx.STR_REGEX_PRE_RELEASE.toString());
+		}
+		return patternPreRelease.matcher(requireNonNullElse(preRelease, ""));
+	}
+
+	/**
+	 * Creates a new instance of the given String.
+	 *
+	 * @param preRelease a semantic version pre-release String
+	 * @return a new instance
+	 * @throws InvalidSemanticVersionException if the given preRelease String is
+	 *                                         invalid (including null)
+	 * @since 2.0.0
+	 */
+	public static PreRelease of(String preRelease)
+	{
+		return of(preRelease, null);
+	}
+
+	/**
+	 * Creates a new instance of the given String.
+	 *
+	 * @param preRelease            a semantic version pre-release String
+	 * @param exceptionMsgFormatter function from an invalid preRelease argument
+	 *                              String to a localized
+	 *                              InvalidSemanticVersionException message. Can
+	 *                              be {@code null} to use the default formatting
+	 * @return a new instance
+	 * @throws InvalidSemanticVersionException if the given preRelease String is
+	 *                                         invalid (including null)
+	 * @since 2.0.0
+	 */
+	public static PreRelease of(String preRelease,
+		@Nullable Function<String, String> exceptionMsgFormatter)
+	{
+		if (getMatcher(preRelease).matches())
+		{
+			return new PreRelease(preRelease);
+		}
+		else
+		{
+			throw new InvalidSemanticVersionException(preRelease, exceptionMsgFormatter);
+		}
 	}
 
 	@Override

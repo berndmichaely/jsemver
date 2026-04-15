@@ -18,6 +18,7 @@ package de.bernd_michaely.common.semver;
 import java.util.Arrays;
 import java.util.List;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  * Base class to handle a dot separated semantic version part.
@@ -35,7 +36,7 @@ sealed public abstract class DotSeparatedVersionPart permits PreRelease, Build
 		this("");
 	}
 
-	DotSeparatedVersionPart(String versionPart)
+	DotSeparatedVersionPart(@Nullable String versionPart)
 	{
 		this.versionPart = versionPart != null ? versionPart : "";
 	}

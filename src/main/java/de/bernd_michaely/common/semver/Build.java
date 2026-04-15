@@ -15,21 +15,79 @@
  */
 package de.bernd_michaely.common.semver;
 
+import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+
+import static java.util.Objects.requireNonNullElse;
 
 /**
  * Class to handle a semantic version build.
  */
 public final class Build extends DotSeparatedVersionPart
 {
+	private static @MonotonicNonNull Pattern patternBuild;
+
 	Build()
 	{
 		super();
 	}
 
-	Build(String build)
+	Build(@Nullable String build)
 	{
 		super(build);
+	}
+
+	private static Matcher getMatcher(String build)
+	{
+		if (patternBuild == null)
+		{
+			patternBuild = Pattern.compile(
+				SemanticVersion.SubRegEx.STR_REGEX_BUILD.toString());
+		}
+		return patternBuild.matcher(requireNonNullElse(build, ""));
+	}
+
+	/**
+	 * Creates a new instance of the given String.
+	 *
+	 * @param build a semantic version build String
+	 * @return a new instance
+	 * @throws InvalidSemanticVersionException if the given build String is
+	 *                                         invalid (including null)
+	 * @since 2.0.0
+	 */
+	public static Build of(String build)
+	{
+		return of(build, null);
+	}
+
+	/**
+	 * Creates a new instance of the given String.
+	 *
+	 * @param build                 a semantic version build String
+	 * @param exceptionMsgFormatter function from an invalid build argument String
+	 *                              to a localized InvalidSemanticVersionException
+	 *                              message. Can be {@code null} to use the
+	 *                              default formatting
+	 * @return a new instance
+	 * @throws InvalidSemanticVersionException if the given build String is
+	 *                                         invalid (including null)
+	 * @since 2.0.0
+	 */
+	public static Build of(String build,
+		@Nullable Function<String, String> exceptionMsgFormatter)
+	{
+		if (getMatcher(build).matches())
+		{
+			return new Build(build);
+		}
+		else
+		{
+			throw new InvalidSemanticVersionException(build, exceptionMsgFormatter);
+		}
 	}
 
 	@Override
