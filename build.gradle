@@ -10,9 +10,13 @@ wrapper {
 	gradleVersion = '9.3.1'
 }
 
-version = '2.0.0'
-group = 'de.bernd-michaely'
-description = 'Java modular library to implement the Semantic Versioning 2.0.0 specification found at semver.org'
+// maven coordinates info:
+final var mc = [
+	group :  'de.bernd-michaely', artifact :  "${rootProject.name}", version :  '2.1.0',
+	description : 'Java modular library to implement the Semantic Versioning 2.0.0 specification found at semver.org' ]
+group = mc.group
+version = mc.version
+description = mc.description
 
 final def javaLangVersion = JavaLanguageVersion.of(17)
 final def jvmVendor = JvmVendorSpec.ADOPTIUM
@@ -91,8 +95,8 @@ jacocoTestReport {
 }
 
 final Map<String, ?> _map = new LinkedHashMap<>()
-_map.put ("Project »${name}«", description)
-_map.put ("Maven coordinates", "»${group}:${name}:${version}«")
+_map.put ("Project »${rootProject.name}«", description)
+_map.put ("Maven coordinates", "»${group}:${mc.artifact}:${version}«")
 _map.put ("Base dir is", "»${file('.')}«")
 _map.put ("Running Gradle", project.gradle.gradleVersion)
 _map.put ("Java source compatibility", java.sourceCompatibility)
@@ -126,8 +130,8 @@ task getVersionShield {
 	group = javadoc.group
 	final def toShieldParam = { it replaceAll "-", "--" replaceAll "_", "__" replaceAll "\\s", "_"  }
 	doLast {
-		final String label = toShieldParam rootProject.name
-		final String message = toShieldParam (version - ~/\+.*$/)
+		final String label = toShieldParam mc.artifact
+		final String message = toShieldParam (mc.version - ~/\+.*$/)
 		final String color = 'blue'
 		final def url = new URI("https://img.shields.io/badge/${label}-${message}-${color}").toURL()
 		logger.lifecycle "→ getting data from URL »${url}«"
@@ -138,15 +142,15 @@ task getVersionShield {
 publishing {
 	publications {
 		maven(MavenPublication) {
-			groupId = rootProject.group
-			artifactId = rootProject.name
+			groupId = 'de.bernd-michaely'
+			artifactId = mc.artifact
 
 			from components.java
 
 			pom {
-				name = rootProject.name
-				description = rootProject.description
-				url = "https://github.com/berndmichaely/${rootProject.name}"
+				name = artifactId
+				description = mc.description
+				url = "https://github.com/berndmichaely/${artifactId}"
 				inceptionYear = '2024'
 				licenses {
 					license {
@@ -161,9 +165,9 @@ publishing {
 					}
 				}
 				scm {
-					connection = "scm:git:https://github.com/berndmichaely/${rootProject.name}.git"
-					developerConnection = "scm:git:ssh://github.com/berndmichaely/${rootProject.name}.git"
-					url = "https://github.com/berndmichaely/${rootProject.name}"
+					connection = "scm:git:https://github.com/berndmichaely/${artifactId}.git"
+					developerConnection = "scm:git:ssh://github.com/berndmichaely/${artifactId}.git"
+					url = "https://github.com/berndmichaely/${artifactId}"
 				}
 			}
 		}
@@ -176,6 +180,23 @@ publishing {
 }
 
 jreleaser {
+	project {
+		languages {
+			java {
+				version = javaLangVersion.toString()
+				artifactId = mc.artifact
+/*
+				jvmOptions {
+					universal('-Dprop=value')
+					unix('-Dprop=value')
+					linux('-Dprop=value')
+					osx('-Dprop=value')
+					windows('-Dprop=value')
+				}
+*/
+			}
+		}
+	}
 	signing {
 		pgp {
 			active = 'ALWAYS'
@@ -205,7 +226,7 @@ jreleaser {
 	release {
 		github {
 			repoOwner = 'berndmichaely'
-			name = rootProject.name
+			name = mc.artifact
 			host = 'github.com'
 			username = 'berndmichaely'
 			sign = true
