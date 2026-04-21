@@ -27,7 +27,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 public final class InvalidSemanticVersionException extends IllegalArgumentException
 {
 	static final String DEFAULT_MSG_FORMAT =
-		"»%s« is not a valid Semantic Version " + SemanticVersion.getSupportedVersion() + " argument";
+		"»%s« is not a valid Semantic Version " + DefaultSemanticVersion.SUPPORTED_VERSION + " argument";
 	/**
 	 * Holds the invalid SemanticVersion constructor argument.
 	 */
@@ -36,23 +36,42 @@ public final class InvalidSemanticVersionException extends IllegalArgumentExcept
 	 * Function from an invalid semanticVersion argument String to a localized
 	 * InvalidSemanticVersionException message.
 	 */
-	private final @Nullable Function<String, String> exceptionMsgFormatter;
+	private static @Nullable Function<String, String> exceptionMessageFormatter;
 
 	/**
 	 * Creates a new instance.
 	 *
-	 * @param invalidArgument       the invalid SemanticVersion constructor
-	 *                              argument
-	 * @param exceptionMsgFormatter function from an invalid semanticVersion
-	 *                              argument String to a localized
-	 *                              InvalidSemanticVersionException message
+	 * @param invalidArgument the invalid SemanticVersion constructor argument
 	 */
-	InvalidSemanticVersionException(String invalidArgument,
-		@Nullable Function<String, String> exceptionMsgFormatter)
+	InvalidSemanticVersionException(String invalidArgument)
 	{
-		super(defaultFormat(invalidArgument));
+		super(defaultFormat(invalidArgument), null);
 		this.invalidArgument = invalidArgument;
-		this.exceptionMsgFormatter = exceptionMsgFormatter;
+	}
+
+	/**
+	 * Returns the exception message formatter.
+	 *
+	 * @return the optional exception message formatter
+	 */
+	public static @Nullable
+	Function<String, String> getExceptionMessageFormatter()
+	{
+		return exceptionMessageFormatter;
+	}
+
+	/**
+	 * Sets an optional exception message formatter.
+	 *
+	 * @param exceptionMessageFormatter function from an invalid semanticVersion
+	 *                                  argument String to a localized
+	 *                                  InvalidSemanticVersionException message.
+	 *                                  {@code null} to use a default.
+	 */
+	public static void setExceptionMessageFormatter(
+		@Nullable Function<String, String> exceptionMessageFormatter)
+	{
+		InvalidSemanticVersionException.exceptionMessageFormatter = exceptionMessageFormatter;
 	}
 
 	private static String defaultFormat(String arg)
@@ -73,8 +92,8 @@ public final class InvalidSemanticVersionException extends IllegalArgumentExcept
 	@Override
 	public String getLocalizedMessage()
 	{
-		return (exceptionMsgFormatter != null) ?
-			exceptionMsgFormatter.apply(invalidArgument) :
+		return (exceptionMessageFormatter != null) ?
+			exceptionMessageFormatter.apply(invalidArgument) :
 			defaultFormat(invalidArgument);
 	}
 }

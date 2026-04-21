@@ -16,7 +16,6 @@
 package de.bernd_michaely.common.semver;
 
 import java.util.EnumMap;
-import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -47,7 +46,7 @@ public class Identifier implements Comparable<Identifier>
 		 */
 		BUILD
 	}
-	private static EnumMap<Type, Pattern> mapPattern = new EnumMap<>(Type.class);
+	private static final EnumMap<Type, Pattern> mapPattern = new EnumMap<>(Type.class);
 
 	Identifier(String part)
 	{
@@ -73,9 +72,9 @@ public class Identifier implements Comparable<Identifier>
 		return mapPattern.computeIfAbsent(type, t -> Pattern.compile(switch (t)
 		{
 			case PRE_RELEASE ->
-				SemanticVersion.SubRegEx.STR_REGEX_ID_PRE_RELEASE.toString();
+				SemanticVersion.SubRegEx.PRE_RELEASE_IDENTIFIER;
 			case BUILD ->
-				SemanticVersion.SubRegEx.STR_REGEX_ID_BUILD.toString();
+				SemanticVersion.SubRegEx.BUILD_IDENTIFIER;
 		})).matcher(requireNonNullElse(identifier, ""));
 	}
 
@@ -91,33 +90,13 @@ public class Identifier implements Comparable<Identifier>
 	 */
 	public static Identifier of(String identifier, Type type)
 	{
-		return of(identifier, type, null);
-	}
-
-	/**
-	 * Creates a new instance of the given String.
-	 *
-	 * @param identifier            a semantic version identifier String
-	 * @param type                  the identifier type
-	 * @param exceptionMsgFormatter function from an invalid identifier argument
-	 *                              String to a localized
-	 *                              InvalidSemanticVersionException message. Can
-	 *                              be {@code null} to use the default formatting
-	 * @return a new instance
-	 * @throws InvalidSemanticVersionException if the given identifier String is
-	 *                                         invalid (including null)
-	 * @since 2.0.0
-	 */
-	public static Identifier of(String identifier, Type type,
-		@Nullable Function<String, String> exceptionMsgFormatter)
-	{
 		if (getMatcher(identifier, type).matches())
 		{
 			return new Identifier(identifier);
 		}
 		else
 		{
-			throw new InvalidSemanticVersionException(identifier, exceptionMsgFormatter);
+			throw new InvalidSemanticVersionException(identifier);
 		}
 	}
 
@@ -189,6 +168,19 @@ public class Identifier implements Comparable<Identifier>
 	public boolean equalsIgnoreCase(Identifier other)
 	{
 		return this.part.equalsIgnoreCase(other.part);
+	}
+
+	/**
+	 * Compares two identifiers ignoring case.
+	 *
+	 * @param strId an identifier String
+	 * @param type  the identifier type
+	 * @return true, iff both identifiers are equal ignoring case
+	 * @since 3.0.0
+	 */
+	public boolean equalsIgnoreCase(String strId, Type type)
+	{
+		return equalsIgnoreCase(Identifier.of(strId, type));
 	}
 
 	/**

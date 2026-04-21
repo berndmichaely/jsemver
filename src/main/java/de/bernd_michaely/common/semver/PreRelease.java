@@ -15,7 +15,6 @@
  */
 package de.bernd_michaely.common.semver;
 
-import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
@@ -44,8 +43,7 @@ public final class PreRelease extends DotSeparatedVersionPart implements Compara
 	{
 		if (patternPreRelease == null)
 		{
-			patternPreRelease = Pattern.compile(
-				SemanticVersion.SubRegEx.STR_REGEX_PRE_RELEASE.toString());
+			patternPreRelease = Pattern.compile(SemanticVersion.SubRegEx.PRE_RELEASE);
 		}
 		return patternPreRelease.matcher(requireNonNullElse(preRelease, ""));
 	}
@@ -61,32 +59,13 @@ public final class PreRelease extends DotSeparatedVersionPart implements Compara
 	 */
 	public static PreRelease of(String preRelease)
 	{
-		return of(preRelease, null);
-	}
-
-	/**
-	 * Creates a new instance of the given String.
-	 *
-	 * @param preRelease            a semantic version pre-release String
-	 * @param exceptionMsgFormatter function from an invalid preRelease argument
-	 *                              String to a localized
-	 *                              InvalidSemanticVersionException message. Can
-	 *                              be {@code null} to use the default formatting
-	 * @return a new instance
-	 * @throws InvalidSemanticVersionException if the given preRelease String is
-	 *                                         invalid (including null)
-	 * @since 2.0.0
-	 */
-	public static PreRelease of(String preRelease,
-		@Nullable Function<String, String> exceptionMsgFormatter)
-	{
 		if (getMatcher(preRelease).matches())
 		{
 			return new PreRelease(preRelease);
 		}
 		else
 		{
-			throw new InvalidSemanticVersionException(preRelease, exceptionMsgFormatter);
+			throw new InvalidSemanticVersionException(preRelease);
 		}
 	}
 
