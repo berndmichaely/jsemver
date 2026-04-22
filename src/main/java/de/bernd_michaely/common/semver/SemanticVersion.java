@@ -18,6 +18,7 @@ package de.bernd_michaely.common.semver;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Comparator;
+import java.util.List;
 import java.util.NoSuchElementException;
 
 /**
@@ -42,11 +43,11 @@ public sealed interface SemanticVersion extends Comparable<SemanticVersion>
 		/**
 		 * Regular expression for numeric identifiers.
 		 */
-		String NUMERIC_IDENTIFIER = "(0|[1-9]\\d*)";
+		String NUMERIC_IDENTIFIER = "0|[1-9]\\d*";
 		/**
 		 * Regular expression for pre-release identifier.
 		 */
-		String PRE_RELEASE_IDENTIFIER = "0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*";
+		String PRE_RELEASE_IDENTIFIER = NUMERIC_IDENTIFIER + "|\\d*[a-zA-Z-][0-9a-zA-Z-]*";
 		/**
 		 * Regular expression for build identifier.
 		 */
@@ -55,22 +56,27 @@ public sealed interface SemanticVersion extends Comparable<SemanticVersion>
 		/**
 		 * Regular expression for version core.
 		 */
-		String VERSION_CORE = NUMERIC_IDENTIFIER + DOT_SEPARATOR + NUMERIC_IDENTIFIER + DOT_SEPARATOR + NUMERIC_IDENTIFIER;
+		String VERSION_CORE =
+			"(" + NUMERIC_IDENTIFIER + ")" + DOT_SEPARATOR +
+			"(" + NUMERIC_IDENTIFIER + ")" + DOT_SEPARATOR +
+			"(" + NUMERIC_IDENTIFIER + ")";
 		/**
 		 * Regular expression for pre-release.
 		 */
-		String PRE_RELEASE = "(?:-((?:" + PRE_RELEASE_IDENTIFIER + ")(?:\\.(?:" + PRE_RELEASE_IDENTIFIER + "))*))?";
+		String PRE_RELEASE = "(?:-((?:" +
+			PRE_RELEASE_IDENTIFIER + ")(?:\\.(?:" +
+			PRE_RELEASE_IDENTIFIER + "))*))?";
 		/**
 		 * Regular expression for build.
 		 */
 		String BUILD = "(?:\\+(" + BUILD_IDENTIFIER + "(?:\\." + BUILD_IDENTIFIER + ")*))?";
 
 		/**
-		 * Regular expression for semantic version substring.
+		 * Regular expression to match a full String as substring.
 		 */
 		String SEMANTIC_VERSION = VERSION_CORE + PRE_RELEASE + BUILD;
 		/**
-		 * Regular expression for semantic version.
+		 * Regular expression to match a full String as semantic version.
 		 */
 		String FULL_SEMANTIC_VERSION = "^" + SEMANTIC_VERSION + "$";
 	}
@@ -197,6 +203,13 @@ public sealed interface SemanticVersion extends Comparable<SemanticVersion>
 	{
 		return DefaultSemanticVersion.getComparator();
 	}
+
+	/**
+	 * Returns a list of all version parts.
+	 *
+	 * @return a list of all version parts
+	 */
+	List<VersionPart> getVersionParts();
 
 	/**
 	 * Returns a more verbose string than the canonical form. {@code toString()}

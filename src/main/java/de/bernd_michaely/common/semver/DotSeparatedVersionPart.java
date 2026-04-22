@@ -23,45 +23,30 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 /**
  * Base class to handle a dot separated semantic version part.
  */
-sealed public abstract class DotSeparatedVersionPart permits PreRelease, Build
+public abstract sealed class DotSeparatedVersionPart extends VersionPart
+	permits PreRelease, Build
 {
 	private static final String DELIMITER = "\\.";
 	private static final Identifier[] NULL = new Identifier[0];
-	private final String versionPart;
 	private Identifier[] identifiers = NULL;
 	private @MonotonicNonNull List<Identifier> listIdentifiers;
 
 	DotSeparatedVersionPart()
 	{
-		this("");
+		super();
 	}
 
 	DotSeparatedVersionPart(@Nullable String versionPart)
 	{
-		this.versionPart = versionPart != null ? versionPart : "";
-	}
-
-	/**
-	 * Returns true, iff this part is blank.
-	 *
-	 * @return true, iff this part is blank
-	 */
-	public boolean isBlank()
-	{
-		return versionPart.isBlank();
-	}
-
-	String getVersionPart()
-	{
-		return versionPart;
+		super(versionPart);
 	}
 
 	private Identifier[] identifiers()
 	{
 		if (identifiers == NULL)
 		{
-			identifiers = versionPart.isBlank() ? new Identifier[0] :
-				Arrays.stream(versionPart.split(DELIMITER)).map(Identifier::new).toArray(Identifier[]::new);
+			identifiers = getPart().isBlank() ? new Identifier[0] :
+				Arrays.stream(getPart().split(DELIMITER)).map(Identifier::new).toArray(Identifier[]::new);
 		}
 		return identifiers;
 	}
@@ -85,8 +70,8 @@ sealed public abstract class DotSeparatedVersionPart permits PreRelease, Build
 
 	int compareTo(DotSeparatedVersionPart other)
 	{
-		final boolean thisIsEmpty = this.versionPart.isEmpty();
-		final boolean otherIsEmpty = other.versionPart.isEmpty();
+		final boolean thisIsEmpty = this.getPart().isEmpty();
+		final boolean otherIsEmpty = other.getPart().isEmpty();
 		if (thisIsEmpty || otherIsEmpty)
 		{
 			return thisIsEmpty ? (otherIsEmpty ? 0 : 1) : -1;
@@ -95,16 +80,5 @@ sealed public abstract class DotSeparatedVersionPart permits PreRelease, Build
 		{
 			return Arrays.compare(this.identifiers(), other.identifiers());
 		}
-	}
-
-	/**
-	 * Returns the original constructor parameter.
-	 *
-	 * @return the original constructor parameter
-	 */
-	@Override
-	public String toString()
-	{
-		return versionPart;
 	}
 }

@@ -104,7 +104,7 @@ public class SemanticVersionTest
 	{
 		assertDoesNotThrow(() -> System.out.println(
 			"SemanticVersion::getSupportedVersion : " + SemanticVersion.getSupportedVersion()));
-		final var minSupportedVersion = new DefaultSemanticVersion(2, 0, 0, null, null);
+		final var minSupportedVersion = SemanticVersion.of("2.0.0");
 		assertTrue(SemanticVersion.getSupportedVersion().compareTo(minSupportedVersion) >= 0);
 	}
 
@@ -113,7 +113,7 @@ public class SemanticVersionTest
 	{
 		assertDoesNotThrow(() -> System.out.println(
 			"SemanticVersion::getSupportedVersion : " + SemanticVersion.getLibVersion()));
-		final var minSupportedVersion = new DefaultSemanticVersion(2, 1, 0, null, null);
+		final var minSupportedVersion = SemanticVersion.of("2.1.0");
 		assertTrue(SemanticVersion.getLibVersion().compareTo(minSupportedVersion) >= 0);
 	}
 
@@ -126,13 +126,14 @@ public class SemanticVersionTest
 		assertEquals(2, version.getMinor());
 		assertEquals(3, version.getPatch());
 		assertEquals("rc.1", version.getPreRelease().toString());
-		assertFalse(version.getPreRelease().isBlank());
-		assertFalse(version.getBuild().isBlank());
+		assertTrue(version.getPreRelease().isPresent());
+		assertTrue(version.getBuild().isPresent());
 		final SemanticVersion version0 = SemanticVersion.of("0.0.0");
-		assertTrue(version0.getPreRelease().isBlank());
-		assertTrue(SemanticVersion.of().getBuild().isBlank());
+		assertFalse(version0.getPreRelease().isPresent());
+		assertFalse(SemanticVersion.of().getBuild().isPresent());
 		assertEquals("b17", version.getBuild().toString());
-		assertEquals(new DefaultSemanticVersion(1, 2, 3,
+		assertEquals(new DefaultSemanticVersion(
+			new NumericIdentifier("1"), new NumericIdentifier("2"), new NumericIdentifier("3"),
 			new PreRelease("rc.1"), new Build("b17")), version);
 		assertDoesNotThrow(() -> SemanticVersion.of("1.0.0-a00"));
 		assertDoesNotThrow(() -> SemanticVersion.of("1.0.0-a0a"));
@@ -159,16 +160,18 @@ public class SemanticVersionTest
 		assertEquals("0-0", sv5.getPreRelease().getIdentifiers().get(0).toString());
 		assertEquals(2, SemanticVersion.of("1.0.0-0.0").getPreRelease().getIdentifiers().size());
 		assertEquals(SemanticVersion.of(), SemanticVersion.of("0.0.0-0"));
-		assertEquals(new DefaultSemanticVersion(0, 0, 0, new PreRelease(),
+		assertEquals(new DefaultSemanticVersion(
+			new NumericIdentifier("0"), new NumericIdentifier("0"), new NumericIdentifier("0"),
+			new PreRelease(),
 			new Build()), version0);
 		final SemanticVersion sv6 = SemanticVersion.of("1.0.0+001");
 		assertDoesNotThrow(() -> sv6);
 		final Build build6 = sv6.getBuild();
-		assertFalse(build6.isBlank());
+		assertTrue(build6.isPresent());
 		assertEquals(1, build6.getIdentifiers().size());
 		final Identifier id6 = build6.getIdentifiers().get(0);
 		assertTrue(id6.isNumeric());
-		assertEquals(1, id6.getNumber());
+		assertEquals(1, id6.getOptionalNumber().get());
 		assertEquals("001", id6.toString());
 		assertTrue(SemanticVersion.check("1.0.0"));
 		assertFalse(SemanticVersion.check("x.y.z"));
@@ -284,13 +287,13 @@ public class SemanticVersionTest
 	{
 		assertEquals(3, identifiers.size());
 		assertTrue(identifiers.get(0).isNumeric());
-		assertEquals(5, identifiers.get(0).getNumber());
+		assertEquals(5, identifiers.get(0).getOptionalNumber().get());
 		assertEquals("5", identifiers.get(0).toString());
 		assertFalse(identifiers.get(1).isNumeric());
-		assertTrue(identifiers.get(1).getNumber() < 0);
+		assertFalse(identifiers.get(1).getOptionalNumber().isPresent());
 		assertEquals("b", identifiers.get(1).toString());
 		assertTrue(identifiers.get(2).isNumeric());
-		assertEquals(7, identifiers.get(2).getNumber());
+		assertEquals(7, identifiers.get(2).getOptionalNumber().get());
 		assertEquals("7", identifiers.get(2).toString());
 	}
 
@@ -315,13 +318,27 @@ public class SemanticVersionTest
 	}
 
 	@Test
+	public void test_NumericIdentifier()
+	{
+		System.out.println("RegEx SemanticVersion NumericIdentifier parts:");
+		assertThrows(IllegalStateException.class, () -> new NumericIdentifier(null));
+		assertThrows(IllegalStateException.class, () -> new NumericIdentifier(""));
+		assertThrows(IllegalStateException.class, () -> new NumericIdentifier("abc"));
+		assertEquals(17, new NumericIdentifier("17").getNumber());
+		InvalidSemanticVersionException.setExceptionMessageFormatter(s -> "~" + s);
+		assertThrows(InvalidSemanticVersionException.class, () -> NumericIdentifier.of("abc"), "~17");
+		assertEquals(17, NumericIdentifier.of("17").getNumber());
+		assertNotEquals(NumericIdentifier.of("17"), PreRelease.of("-abc.2.def"));
+		assertEquals(NumericIdentifier.of("17"), new NumericIdentifier("17"));
+		assertNotEquals(NumericIdentifier.of("17"), new NumericIdentifier("18"));
+	}
+
+	@Test
 	public void test_PreRelease()
 	{
 		System.out.println("RegEx SemanticVersion PreRelease parts:");
-		System.out.println(STR_REGEX_SEMANTIC_VERSION);
-		System.out.println();
-		assertTrue(new PreRelease(null).isBlank());
-		assertTrue(new PreRelease("").isBlank());
+		assertFalse(new PreRelease(null).isPresent());
+		assertFalse(new PreRelease("").isPresent());
 		test_Identifiers(SemanticVersion.of("1.2.3-5.b.7").getPreRelease().getIdentifiers());
 		assertThrows(InvalidSemanticVersionException.class, () -> PreRelease.of("abc"));
 		assertThrows(InvalidSemanticVersionException.class, () -> PreRelease.of("+abc"));
@@ -334,10 +351,8 @@ public class SemanticVersionTest
 	public void test_Build()
 	{
 		System.out.println("RegEx SemanticVersion Build parts:");
-		System.out.println(STR_REGEX_SEMANTIC_VERSION);
-		System.out.println();
-		assertTrue(new Build(null).isBlank());
-		assertTrue(new Build("").isBlank());
+		assertFalse(new Build(null).isPresent());
+		assertFalse(new Build("").isPresent());
 		test_Identifiers(SemanticVersion.of("1.2.3+5.b.7").getBuild().getIdentifiers());
 		assertThrows(InvalidSemanticVersionException.class, () -> Build.of("xyz"));
 		assertThrows(InvalidSemanticVersionException.class, () -> Build.of("-xyz"));
@@ -396,8 +411,8 @@ public class SemanticVersionTest
 		assertIterableEquals(listAscending,
 			listAscending.stream().collect(toCollection(TreeSet::new)));
 		final var sv1 = SemanticVersion.of("0.0.0-1+1");
-		assertFalse(sv1.getPreRelease().isBlank());
-		assertFalse(sv1.getBuild().isBlank());
+		assertTrue(sv1.getPreRelease().isPresent());
+		assertTrue(sv1.getBuild().isPresent());
 		assertEquals(sv1.getPreRelease().toString(), sv1.getBuild().toString());
 		assertFalse(sv1.getPreRelease().equals(sv1.getBuild()));
 		assertFalse(sv1.getBuild().equals(sv1.getPreRelease()));
@@ -454,5 +469,34 @@ public class SemanticVersionTest
 			.map(sv -> ("· %" + maxLength + "s -> %s").formatted(sv, sv.getDescription()))
 			.forEach(System.out::println);
 		assertTrue(SemanticVersion.of("1.0.0+xy").getDescription().startsWith("1.0.0"));
+	}
+
+	@Test
+	public void test_getVersionParts()
+	{
+		System.out.println("test_getVersionParts");
+		final List<VersionPart> list = SemanticVersion.of("1.2.3-rc.4+b.5.6").getVersionParts();
+		assertEquals(5, list.size());
+		assertInstanceOf(NumericIdentifier.class, list.get(0));
+		assertEquals(new NumericIdentifier("1"), list.get(0));
+		assertEquals(1, ((NumericIdentifier) list.get(0)).getNumber());
+		assertInstanceOf(NumericIdentifier.class, list.get(1));
+		assertEquals(new NumericIdentifier("2"), list.get(1));
+		assertEquals(2, ((NumericIdentifier) list.get(1)).getNumber());
+		assertInstanceOf(NumericIdentifier.class, list.get(2));
+		assertEquals(new NumericIdentifier("3"), list.get(2));
+		assertEquals(3, ((NumericIdentifier) list.get(2)).getNumber());
+		assertInstanceOf(PreRelease.class, list.get(3));
+		assertEquals(new PreRelease("rc.4"), list.get(3));
+		assertInstanceOf(Build.class, list.get(4));
+		assertEquals(new Build("b.5.6"), list.get(4));
+		list.forEach(part -> assertTrue(part.isPresent()));
+		final List<VersionPart> list2 = SemanticVersion.of("7.8.9").getVersionParts();
+		assertEquals(5, list2.size());
+		assertTrue(list2.get(0).isPresent());
+		assertTrue(list2.get(1).isPresent());
+		assertTrue(list2.get(2).isPresent());
+		assertFalse(list2.get(3).isPresent());
+		assertFalse(list2.get(4).isPresent());
 	}
 }

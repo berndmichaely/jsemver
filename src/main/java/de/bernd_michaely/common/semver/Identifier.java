@@ -16,6 +16,7 @@
 package de.bernd_michaely.common.semver;
 
 import java.util.EnumMap;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -25,12 +26,10 @@ import static java.util.Objects.requireNonNullElse;
 /**
  * Class to describe dot separated version identifier parts.
  */
-public class Identifier implements Comparable<Identifier>
+public final class Identifier implements Comparable<Identifier>
 {
-	private static final int NO_NUMBER = -1;
 	private final String part;
-	private final boolean isNumeric;
-	private final int number;
+	private final Optional<Integer> optionalNumber;
 
 	/**
 	 * Type of Identifier.
@@ -51,20 +50,17 @@ public class Identifier implements Comparable<Identifier>
 	Identifier(String part)
 	{
 		this.part = part;
-		boolean _numeric;
-		int _number;
+		Optional<Integer> optional;
 		try
 		{
-			_number = Integer.parseInt(part);
-			_numeric = true;
+			final int num = Integer.parseInt(part);
+			optional = Optional.of(num);
 		}
 		catch (NumberFormatException ex)
 		{
-			_number = NO_NUMBER;
-			_numeric = false;
+			optional = Optional.empty();
 		}
-		this.isNumeric = _numeric;
-		this.number = _number;
+		this.optionalNumber = optional;
 	}
 
 	private static Matcher getMatcher(String identifier, Type type)
@@ -101,42 +97,51 @@ public class Identifier implements Comparable<Identifier>
 	}
 
 	/**
+	 * Returns the substring of this identifier.
+	 *
+	 * @return the identifier substring
+	 */
+	public String getPart()
+	{
+		return part;
+	}
+
+	/**
 	 * Returns true, if the identifier is numeric.
 	 *
 	 * @return true, if the identifier is numeric
 	 */
 	public boolean isNumeric()
 	{
-		return isNumeric;
+		return optionalNumber.isPresent();
 	}
 
 	/**
-	 * If the identifier is numeric, returns it as a number. Otherwise the return
-	 * value is meaningless.
+	 * If the identifier is numeric, returns the number value, otherwise an empty
+	 * optional.
 	 *
-	 * @return the identifier as number, if it is numeric, otherwise a negative
-	 *         number
+	 * @return the number value, if numeric, otherwise an empty optional
 	 * @see #isNumeric()
 	 */
-	public int getNumber()
+	public Optional<Integer> getOptionalNumber()
 	{
-		return number;
+		return optionalNumber;
 	}
 
 	@Override
 	public int compareTo(Identifier other)
 	{
-		if (this.isNumeric && other.isNumeric)
+		if (this.isNumeric() && other.isNumeric())
 		{
-			return Integer.compare(this.number, other.number);
+			return Integer.compare(this.getOptionalNumber().get(), other.getOptionalNumber().get());
 		}
-		else if (!this.isNumeric && !other.isNumeric)
+		else if (!this.isNumeric() && !other.isNumeric())
 		{
 			return this.part.compareTo(other.part);
 		}
 		else
 		{
-			return this.isNumeric ? -1 : 1;
+			return this.isNumeric() ? -1 : 1;
 		}
 	}
 
@@ -191,6 +196,6 @@ public class Identifier implements Comparable<Identifier>
 	@Override
 	public String toString()
 	{
-		return part;
+		return getPart();
 	}
 }

@@ -91,6 +91,6 @@ public final class PreRelease extends DotSeparatedVersionPart implements Compara
 	@Override
 	public int hashCode()
 	{
-		return getVersionPart().hashCode();
+		return getPart().hashCode();
 	}
 }

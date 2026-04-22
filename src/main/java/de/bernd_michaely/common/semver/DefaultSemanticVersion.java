@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -42,13 +43,14 @@ final class DefaultSemanticVersion implements SemanticVersion
 	static @MonotonicNonNull SemanticVersion VERSION_LIB;
 	private static @MonotonicNonNull Pattern patternSemVer;
 
-	private final int major;
-	private final int minor;
-	private final int patch;
+	private final NumericIdentifier major;
+	private final NumericIdentifier minor;
+	private final NumericIdentifier patch;
 	private final PreRelease preRelease;
 	private final Build build;
 
-	DefaultSemanticVersion(int major, int minor, int patch, PreRelease preRelease, Build build)
+	DefaultSemanticVersion(NumericIdentifier major, NumericIdentifier minor,
+		NumericIdentifier patch, PreRelease preRelease, Build build)
 	{
 		this.major = major;
 		this.minor = minor;
@@ -63,8 +65,11 @@ final class DefaultSemanticVersion implements SemanticVersion
 		if (matcher.matches())
 		{
 			return new DefaultSemanticVersion(
-				parseInt(matcher.group(1)), parseInt(matcher.group(2)), parseInt(matcher.group(3)),
-				new PreRelease(matcher.group(4)), new Build(matcher.group(5)));
+				new NumericIdentifier(matcher.group(1)),
+				new NumericIdentifier(matcher.group(2)),
+				new NumericIdentifier(matcher.group(3)),
+				new PreRelease(matcher.group(4)),
+				new Build(matcher.group(5)));
 		}
 		else
 		{
@@ -89,13 +94,6 @@ final class DefaultSemanticVersion implements SemanticVersion
 					}
 				}).findFirst().orElseThrow();
 		}
-	}
-
-	@SuppressWarnings("argument")
-	static int parseInt(@Nullable String s)
-	{
-		// a null argument will throw a NumberFormatException, not a NPE
-		return Integer.parseInt(s);
 	}
 
 	static SemanticVersion getSupportedVersion()
@@ -133,19 +131,19 @@ final class DefaultSemanticVersion implements SemanticVersion
 	@Override
 	public int getMajor()
 	{
-		return major;
+		return major.getNumber();
 	}
 
 	@Override
 	public int getMinor()
 	{
-		return minor;
+		return minor.getNumber();
 	}
 
 	@Override
 	public int getPatch()
 	{
-		return patch;
+		return patch.getNumber();
 	}
 
 	@Override
@@ -209,11 +207,17 @@ final class DefaultSemanticVersion implements SemanticVersion
 	}
 
 	@Override
+	public List<VersionPart> getVersionParts()
+	{
+		return List.of(major, minor, patch, preRelease, build);
+	}
+
+	@Override
 	public String getDescription()
 	{
-		return "%d.%d.%d%s%s".formatted(major, minor, patch,
-			preRelease.isBlank() ? "" : " pre-release »" + preRelease + "«",
-			build.isBlank() ? "" : " build »" + build + "«");
+		return "%d.%d.%d%s%s".formatted(getMajor(), getMinor(), getPatch(),
+			getPreRelease().isPresent() ? " pre-release »" + getPreRelease() + "«" : "",
+			getBuild().isPresent() ? " build »" + getBuild() + "«" : "");
 	}
 
 	/**
@@ -225,8 +229,8 @@ final class DefaultSemanticVersion implements SemanticVersion
 	@Override
 	public String toString()
 	{
-		return "%d.%d.%d%s%s".formatted(major, minor, patch,
-			preRelease.isBlank() ? "" : "-" + preRelease,
-			build.isBlank() ? "" : "+" + build);
+		return "%d.%d.%d%s%s".formatted(getMajor(), getMinor(), getPatch(),
+			getPreRelease().isPresent() ? "-" + getPreRelease() : "",
+			getBuild().isPresent() ? "+" + getBuild() : "");
 	}
 }

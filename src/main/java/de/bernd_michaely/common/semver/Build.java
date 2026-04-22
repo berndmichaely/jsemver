@@ -74,7 +74,7 @@ public final class Build extends DotSeparatedVersionPart
 	{
 		if (object instanceof Build other)
 		{
-			return this.getVersionPart().equals(other.getVersionPart());
+			return this.getPart().equals(other.getPart());
 		}
 		else
 		{
@@ -85,6 +85,6 @@ public final class Build extends DotSeparatedVersionPart
 	@Override
 	public int hashCode()
 	{
-		return getVersionPart().hashCode();
+		return getPart().hashCode();
 	}
 }

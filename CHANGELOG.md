@@ -5,6 +5,9 @@
   * replaced `SemanticVersion` class and public constructors by interface and factory methods
   * replaced `SemanticVersion.STR_REGEX_SEMANTIC_VERSION` by interface `SemanticVersion.SubRegEx` to describe structural parts of the official regular expression
   * added factory method to read a `SemanticVersion` from a plain text resource (via `InputStream`)
+  * added `SemanticVersion::getVersionParts`
+  * added `NumericIdentifier` type
+  * changed `int Identifier::getNumber` to `Optional<Integer> Identifier::getOptionalNumber`
 
 ## v2.0.0
 
