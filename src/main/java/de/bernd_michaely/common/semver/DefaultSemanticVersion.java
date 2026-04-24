@@ -47,7 +47,9 @@ final class DefaultSemanticVersion implements SemanticVersion
 	private final NumericIdentifier major;
 	private final NumericIdentifier minor;
 	private final NumericIdentifier patch;
+	@SuppressWarnings("optional.field")
 	private final Optional<PreRelease> preRelease;
+	@SuppressWarnings("optional.field")
 	private final Optional<Build> build;
 
 	DefaultSemanticVersion(
@@ -66,14 +68,21 @@ final class DefaultSemanticVersion implements SemanticVersion
 		final var matcher = DefaultSemanticVersion.getMatcher(semanticVersion);
 		if (matcher.matches())
 		{
-			final String p = matcher.group(4);
-			final String b = matcher.group(5);
-			return new DefaultSemanticVersion(
-				new NumericIdentifier(matcher.group(1)),
-				new NumericIdentifier(matcher.group(2)),
-				new NumericIdentifier(matcher.group(3)),
-				p != null ? new PreRelease(p) : null,
-				b != null ? new Build(b) : null);
+			if (matcher.groupCount() >= 5)
+			{
+				final String p = matcher.group(4);
+				final String b = matcher.group(5);
+				return new DefaultSemanticVersion(
+					new NumericIdentifier(matcher.group(1)),
+					new NumericIdentifier(matcher.group(2)),
+					new NumericIdentifier(matcher.group(3)),
+					p != null ? new PreRelease(p) : null,
+					b != null ? new Build(b) : null);
+			}
+			else
+			{
+				throw new IllegalStateException("Inconsistent number of groups");
+			}
 		}
 		else
 		{
@@ -96,7 +105,8 @@ final class DefaultSemanticVersion implements SemanticVersion
 					{
 						// ignore invalid line
 					}
-				}).findFirst().orElseThrow();
+				}).findFirst().orElseThrow(
+				() -> new InvalidSemanticVersionException("<resource not found>"));
 		}
 	}
 

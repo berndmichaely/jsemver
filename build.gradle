@@ -14,7 +14,7 @@ wrapper {
 final var mc = Collections.unmodifiableMap ([
 		group    :  'de.bernd-michaely',
 		artifact :  rootProject.name,
-		version  :  '3.0.0-ea.3',
+		version  :  '3.0.0-ea.4',
 		description : 'Java modular library to implement the Semantic Versioning 2.0.0 specification found at semver.org'
 	])
 group = mc.group
@@ -43,7 +43,11 @@ dependencies {
 
 checkerFramework {
 	version = libs.checker.get().version
-	checkers = [ 'org.checkerframework.checker.nullness.NullnessChecker' ]
+	checkers = [
+		'org.checkerframework.checker.nullness.NullnessChecker',
+		'org.checkerframework.checker.regex.RegexChecker',
+		'org.checkerframework.checker.optional.OptionalChecker'
+	]
 	excludeTests = true
 }
 

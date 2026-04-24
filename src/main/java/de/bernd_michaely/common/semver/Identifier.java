@@ -29,6 +29,7 @@ import static java.util.Objects.requireNonNullElse;
 public final class Identifier implements Comparable<Identifier>
 {
 	private final String part;
+	@SuppressWarnings("optional.field")
 	private final Optional<Integer> optionalNumber;
 
 	/**
@@ -54,7 +55,7 @@ public final class Identifier implements Comparable<Identifier>
 		try
 		{
 			final int num = Integer.parseInt(part);
-			optional = Optional.of(num);
+			optional = num >= 0 ? Optional.of(num) : Optional.empty();
 		}
 		catch (NumberFormatException ex)
 		{
@@ -131,17 +132,17 @@ public final class Identifier implements Comparable<Identifier>
 	@Override
 	public int compareTo(Identifier other)
 	{
-		if (this.isNumeric() && other.isNumeric())
+		if (this.optionalNumber.isPresent() && other.optionalNumber.isPresent())
 		{
-			return Integer.compare(this.getOptionalNumber().get(), other.getOptionalNumber().get());
+			return Integer.compare(this.optionalNumber.get(), other.optionalNumber.get());
 		}
-		else if (!this.isNumeric() && !other.isNumeric())
+		else if (!this.optionalNumber.isPresent() && !other.optionalNumber.isPresent())
 		{
 			return this.part.compareTo(other.part);
 		}
 		else
 		{
-			return this.isNumeric() ? -1 : 1;
+			return this.optionalNumber.isPresent() ? -1 : 1;
 		}
 	}
 

@@ -19,8 +19,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Comparator;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Optional;
+import org.checkerframework.checker.regex.qual.Regex;
 
 /**
  * Utility for semantic versioning.
@@ -40,23 +40,28 @@ public sealed interface SemanticVersion extends Comparable<SemanticVersion>
 		/**
 		 * Regular expression for dot separator.
 		 */
+		@Regex
 		String DOT_SEPARATOR = "\\.";
 		/**
 		 * Regular expression for numeric identifiers.
 		 */
+		@Regex
 		String NUMERIC_IDENTIFIER = "0|[1-9]\\d*";
 		/**
 		 * Regular expression for pre-release identifier.
 		 */
+		@Regex
 		String PRE_RELEASE_IDENTIFIER = NUMERIC_IDENTIFIER + "|\\d*[a-zA-Z-][0-9a-zA-Z-]*";
 		/**
 		 * Regular expression for build identifier.
 		 */
+		@Regex
 		String BUILD_IDENTIFIER = "[0-9a-zA-Z-]+";
 
 		/**
 		 * Regular expression for version core.
 		 */
+		@Regex
 		String VERSION_CORE =
 			"(" + NUMERIC_IDENTIFIER + ")" + DOT_SEPARATOR +
 			"(" + NUMERIC_IDENTIFIER + ")" + DOT_SEPARATOR +
@@ -64,21 +69,25 @@ public sealed interface SemanticVersion extends Comparable<SemanticVersion>
 		/**
 		 * Regular expression for pre-release.
 		 */
+		@Regex
 		String PRE_RELEASE = "(?:-((?:" +
 			PRE_RELEASE_IDENTIFIER + ")(?:\\.(?:" +
 			PRE_RELEASE_IDENTIFIER + "))*))?";
 		/**
 		 * Regular expression for build.
 		 */
+		@Regex
 		String BUILD = "(?:\\+(" + BUILD_IDENTIFIER + "(?:\\." + BUILD_IDENTIFIER + ")*))?";
 
 		/**
 		 * Regular expression to match a full String as substring.
 		 */
+		@Regex
 		String SEMANTIC_VERSION = VERSION_CORE + PRE_RELEASE + BUILD;
 		/**
 		 * Regular expression to match a full String as semantic version.
 		 */
+		@Regex
 		String FULL_SEMANTIC_VERSION = "^" + SEMANTIC_VERSION + "$";
 	}
 
@@ -152,9 +161,9 @@ public sealed interface SemanticVersion extends Comparable<SemanticVersion>
 	 *                    valid semantic version string will be used.
 	 * @return a new instance
 	 * @see Class#getResourceAsStream(String)
-	 * @throws NoSuchElementException if no valid SemanticVersion is found in the
-	 *                                input
-	 * @throws IOException            on error on stream close
+	 * @throws InvalidSemanticVersionException if no valid SemanticVersion is
+	 *                                         found in the input
+	 * @throws IOException                     on error on stream close
 	 * @since 3.0.0
 	 */
 	static SemanticVersion of(InputStream inputStream) throws IOException

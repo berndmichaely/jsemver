@@ -19,7 +19,6 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.util.Comparator;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.TreeSet;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -185,7 +184,7 @@ public class SemanticVersionTest
 		}
 		try (var stream = new BufferedInputStream(getClass().getResourceAsStream("invalid-semver.txt")))
 		{
-			assertThrows(NoSuchElementException.class, () -> SemanticVersion.of(stream));
+			assertThrows(InvalidSemanticVersionException.class, () -> SemanticVersion.of(stream));
 		}
 		try (var stream = new BufferedInputStream(getClass().getResourceAsStream("valid-semver.txt")))
 		{
@@ -284,7 +283,7 @@ public class SemanticVersionTest
 
 	private void test_Identifiers(List<Identifier> identifiers)
 	{
-		assertEquals(3, identifiers.size());
+		assertEquals(4, identifiers.size());
 		assertTrue(identifiers.get(0).isNumeric());
 		assertEquals(5, identifiers.get(0).getOptionalNumber().get());
 		assertEquals("5", identifiers.get(0).toString());
@@ -294,6 +293,7 @@ public class SemanticVersionTest
 		assertTrue(identifiers.get(2).isNumeric());
 		assertEquals(7, identifiers.get(2).getOptionalNumber().get());
 		assertEquals("7", identifiers.get(2).toString());
+		assertFalse(identifiers.get(3).isNumeric());
 	}
 
 	@Test
@@ -314,6 +314,10 @@ public class SemanticVersionTest
 			() -> Identifier.of("#", Identifier.Type.PRE_RELEASE), "~#");
 		assertThrows(InvalidSemanticVersionException.class,
 			() -> Identifier.of("#", Identifier.Type.BUILD), "~#");
+		final String hugeValue = "" + Long.MAX_VALUE;
+		final Identifier idHuge = new Identifier(hugeValue);
+		assertFalse(idHuge.isNumeric()); // silently suppress overflow
+		assertEquals(hugeValue, idHuge.getPart());
 	}
 
 	@Test
@@ -336,7 +340,7 @@ public class SemanticVersionTest
 	public void test_PreRelease()
 	{
 		System.out.println("RegEx SemanticVersion PreRelease parts:");
-		test_Identifiers(SemanticVersion.of("1.2.3-5.b.7").getPreRelease().get().getIdentifiers());
+		test_Identifiers(SemanticVersion.of("1.2.3-5.b.7.-10").getPreRelease().get().getIdentifiers());
 		assertThrows(InvalidSemanticVersionException.class, () -> PreRelease.of("abc"));
 		assertThrows(InvalidSemanticVersionException.class, () -> PreRelease.of("+abc"));
 		InvalidSemanticVersionException.setExceptionMessageFormatter(s -> "~" + s);
@@ -348,7 +352,7 @@ public class SemanticVersionTest
 	public void test_Build()
 	{
 		System.out.println("RegEx SemanticVersion Build parts:");
-		test_Identifiers(SemanticVersion.of("1.2.3+5.b.7").getBuild().get().getIdentifiers());
+		test_Identifiers(SemanticVersion.of("1.2.3+5.b.7.-10").getBuild().get().getIdentifiers());
 		assertThrows(InvalidSemanticVersionException.class, () -> Build.of("xyz"));
 		assertThrows(InvalidSemanticVersionException.class, () -> Build.of("-xyz"));
 		InvalidSemanticVersionException.setExceptionMessageFormatter(s -> "~" + s);
