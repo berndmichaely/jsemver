@@ -29,12 +29,7 @@ public final class Build extends DotSeparatedVersionPart
 {
 	private static @MonotonicNonNull Pattern patternBuild;
 
-	Build()
-	{
-		super();
-	}
-
-	Build(@Nullable String build)
+	Build(String build)
 	{
 		super(build);
 	}

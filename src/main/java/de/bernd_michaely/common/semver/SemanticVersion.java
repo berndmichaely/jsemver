@@ -20,6 +20,7 @@ import java.io.InputStream;
 import java.util.Comparator;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 /**
  * Utility for semantic versioning.
@@ -103,18 +104,18 @@ public sealed interface SemanticVersion extends Comparable<SemanticVersion>
 	int getPatch();
 
 	/**
-	 * Returns the pre-release version.
+	 * Returns the optional pre-release version.
 	 *
-	 * @return the pre-release version
+	 * @return the optional pre-release version
 	 */
-	PreRelease getPreRelease();
+	Optional<PreRelease> getPreRelease();
 
 	/**
-	 * Returns the build version.
+	 * Returns the optional build version.
 	 *
-	 * @return the build version
+	 * @return the optional build version
 	 */
-	Build getBuild();
+	Optional<Build> getBuild();
 
 	/**
 	 * Creates a default instance with a canonical semantic version. The value is
@@ -205,9 +206,10 @@ public sealed interface SemanticVersion extends Comparable<SemanticVersion>
 	}
 
 	/**
-	 * Returns a list of all version parts.
+	 * Returns a list of the present version parts. That is, the list size varies
+	 * between 3 and 5.
 	 *
-	 * @return a list of all version parts
+	 * @return a list of the present version parts
 	 */
 	List<VersionPart> getVersionParts();
 

@@ -29,12 +29,7 @@ public final class PreRelease extends DotSeparatedVersionPart implements Compara
 {
 	private static @MonotonicNonNull Pattern patternPreRelease;
 
-	PreRelease()
-	{
-		super();
-	}
-
-	PreRelease(@Nullable String preRelease)
+	PreRelease(String preRelease)
 	{
 		super(preRelease);
 	}

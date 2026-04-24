@@ -22,6 +22,7 @@ import java.io.InputStreamReader;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
@@ -46,17 +47,18 @@ final class DefaultSemanticVersion implements SemanticVersion
 	private final NumericIdentifier major;
 	private final NumericIdentifier minor;
 	private final NumericIdentifier patch;
-	private final PreRelease preRelease;
-	private final Build build;
+	private final Optional<PreRelease> preRelease;
+	private final Optional<Build> build;
 
-	DefaultSemanticVersion(NumericIdentifier major, NumericIdentifier minor,
-		NumericIdentifier patch, PreRelease preRelease, Build build)
+	DefaultSemanticVersion(
+		NumericIdentifier major, NumericIdentifier minor, NumericIdentifier patch,
+		@Nullable PreRelease preRelease, @Nullable Build build)
 	{
 		this.major = major;
 		this.minor = minor;
 		this.patch = patch;
-		this.preRelease = preRelease != null ? preRelease : new PreRelease();
-		this.build = build != null ? build : new Build();
+		this.preRelease = Optional.ofNullable(preRelease);
+		this.build = Optional.ofNullable(build);
 	}
 
 	static SemanticVersion of(String semanticVersion)
@@ -64,12 +66,14 @@ final class DefaultSemanticVersion implements SemanticVersion
 		final var matcher = DefaultSemanticVersion.getMatcher(semanticVersion);
 		if (matcher.matches())
 		{
+			final String p = matcher.group(4);
+			final String b = matcher.group(5);
 			return new DefaultSemanticVersion(
 				new NumericIdentifier(matcher.group(1)),
 				new NumericIdentifier(matcher.group(2)),
 				new NumericIdentifier(matcher.group(3)),
-				new PreRelease(matcher.group(4)),
-				new Build(matcher.group(5)));
+				p != null ? new PreRelease(p) : null,
+				b != null ? new Build(b) : null);
 		}
 		else
 		{
@@ -147,13 +151,13 @@ final class DefaultSemanticVersion implements SemanticVersion
 	}
 
 	@Override
-	public PreRelease getPreRelease()
+	public Optional<PreRelease> getPreRelease()
 	{
 		return preRelease;
 	}
 
 	@Override
-	public Build getBuild()
+	public Optional<Build> getBuild()
 	{
 		return build;
 	}
@@ -171,7 +175,19 @@ final class DefaultSemanticVersion implements SemanticVersion
 		Comparator.comparingInt(SemanticVersion::getMajor)
 			.thenComparingInt(SemanticVersion::getMinor)
 			.thenComparingInt(SemanticVersion::getPatch)
-			.thenComparing(SemanticVersion::getPreRelease);
+			.thenComparing((sv1, sv2) ->
+			{
+				final Optional<PreRelease> opt1 = sv1.getPreRelease();
+				final Optional<PreRelease> opt2 = sv2.getPreRelease();
+				if (opt1.isPresent())
+				{
+					return opt2.isPresent() ? opt1.get().compareTo(opt2.get()) : -1;
+				}
+				else
+				{
+					return opt2.isPresent() ? 1 : 0;
+				}
+			});
 
 	static final Comparator<SemanticVersion> getComparator()
 	{
@@ -209,15 +225,26 @@ final class DefaultSemanticVersion implements SemanticVersion
 	@Override
 	public List<VersionPart> getVersionParts()
 	{
-		return List.of(major, minor, patch, preRelease, build);
+		if (preRelease.isPresent())
+		{
+			return build.isPresent() ?
+				List.of(major, minor, patch, preRelease.get(), build.get()) :
+				List.of(major, minor, patch, preRelease.get());
+		}
+		else
+		{
+			return build.isPresent() ?
+				List.of(major, minor, patch, build.get()) :
+				List.of(major, minor, patch);
+		}
 	}
 
 	@Override
 	public String getDescription()
 	{
 		return "%d.%d.%d%s%s".formatted(getMajor(), getMinor(), getPatch(),
-			getPreRelease().isPresent() ? " pre-release »" + getPreRelease() + "«" : "",
-			getBuild().isPresent() ? " build »" + getBuild() + "«" : "");
+			preRelease.map(p -> " pre-release »%s«".formatted(p)).orElse(""),
+			build.map(b -> " build »%s«".formatted(b)).orElse(""));
 	}
 
 	/**
@@ -230,7 +257,7 @@ final class DefaultSemanticVersion implements SemanticVersion
 	public String toString()
 	{
 		return "%d.%d.%d%s%s".formatted(getMajor(), getMinor(), getPatch(),
-			getPreRelease().isPresent() ? "-" + getPreRelease() : "",
-			getBuild().isPresent() ? "+" + getBuild() : "");
+			preRelease.map(p -> "-" + p).orElse(""),
+			build.map(b -> "+" + b).orElse(""));
 	}
 }

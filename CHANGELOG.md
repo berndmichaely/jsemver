@@ -3,6 +3,7 @@
 ## v3.0.0
 
   * replaced `SemanticVersion` class and public constructors by interface and factory methods
+  * reworked handling of blank *pre-release* and *build* parts by using `Optional`
   * replaced `SemanticVersion.STR_REGEX_SEMANTIC_VERSION` by interface `SemanticVersion.SubRegEx` to describe structural parts of the official regular expression
   * added factory method to read a `SemanticVersion` from a plain text resource (via `InputStream`)
   * added `SemanticVersion::getVersionParts`

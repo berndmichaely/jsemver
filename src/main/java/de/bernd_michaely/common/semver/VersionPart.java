@@ -15,8 +15,6 @@
  */
 package de.bernd_michaely.common.semver;
 
-import org.checkerframework.checker.nullness.qual.Nullable;
-
 /**
  * Class to describe the main parts of a SemanticVersion.
  *
@@ -27,14 +25,9 @@ public abstract sealed class VersionPart permits NumericIdentifier, DotSeparated
 {
 	private final String part;
 
-	VersionPart()
+	VersionPart(String versionPart)
 	{
-		this("");
-	}
-
-	VersionPart(@Nullable String versionPart)
-	{
-		this.part = versionPart != null ? versionPart : "";
+		this.part = versionPart;
 	}
 
 	/**
@@ -45,30 +38,6 @@ public abstract sealed class VersionPart permits NumericIdentifier, DotSeparated
 	public final String getPart()
 	{
 		return part;
-	}
-
-	/**
-	 * Returns true, if this is an optional SemanticVersion part, false, if it is
-	 * mandatory.
-	 *
-	 * @return true, if this is an optional SemanticVersion part, false, if it is
-	 *         mandatory
-	 */
-	public final boolean isOptional()
-	{
-		return this instanceof DotSeparatedVersionPart;
-	}
-
-	/**
-	 * Returns true, if this version part is mandatory, or it is optional and
-	 * present.
-	 *
-	 * @return true, if this version part is mandatory, or it is optional and
-	 *         present
-	 */
-	final boolean isPresent()
-	{
-		return !isOptional() || !getPart().isBlank();
 	}
 
 	/**

@@ -18,7 +18,6 @@ package de.bernd_michaely.common.semver;
 import java.util.Arrays;
 import java.util.List;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  * Base class to handle a dot separated semantic version part.
@@ -31,12 +30,7 @@ public abstract sealed class DotSeparatedVersionPart extends VersionPart
 	private Identifier[] identifiers = NULL;
 	private @MonotonicNonNull List<Identifier> listIdentifiers;
 
-	DotSeparatedVersionPart()
-	{
-		super();
-	}
-
-	DotSeparatedVersionPart(@Nullable String versionPart)
+	DotSeparatedVersionPart(String versionPart)
 	{
 		super(versionPart);
 	}
@@ -45,8 +39,8 @@ public abstract sealed class DotSeparatedVersionPart extends VersionPart
 	{
 		if (identifiers == NULL)
 		{
-			identifiers = getPart().isBlank() ? new Identifier[0] :
-				Arrays.stream(getPart().split(DELIMITER)).map(Identifier::new).toArray(Identifier[]::new);
+			identifiers = Arrays.stream(getPart().split(DELIMITER))
+				.map(Identifier::new).toArray(Identifier[]::new);
 		}
 		return identifiers;
 	}
@@ -70,15 +64,6 @@ public abstract sealed class DotSeparatedVersionPart extends VersionPart
 
 	int compareTo(DotSeparatedVersionPart other)
 	{
-		final boolean thisIsEmpty = this.getPart().isEmpty();
-		final boolean otherIsEmpty = other.getPart().isEmpty();
-		if (thisIsEmpty || otherIsEmpty)
-		{
-			return thisIsEmpty ? (otherIsEmpty ? 0 : 1) : -1;
-		}
-		else
-		{
-			return Arrays.compare(this.identifiers(), other.identifiers());
-		}
+		return Arrays.compare(this.identifiers(), other.identifiers());
 	}
 }

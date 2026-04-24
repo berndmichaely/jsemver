@@ -35,7 +35,7 @@ public final class NumericIdentifier extends VersionPart implements Comparable<N
 
 	NumericIdentifier(@Nullable String versionPart)
 	{
-		super(versionPart);
+		super(requireNonNullElse(versionPart, ""));
 		try
 		{
 			this.number = parseInt(versionPart);
