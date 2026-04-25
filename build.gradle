@@ -149,11 +149,12 @@ task writeSemVer {
 	group = processResources.group
 	doFirst {
 		final List<String> lines = fileSemVer.readLines()
+		final int n = lines.size()
 		String oldSemVer
 		int i = 0
 		do {
 			oldSemVer = lines.get(i++).trim()
-		} while (!(oldSemVer =~ regexSemVer))
+		} while (!(oldSemVer =~ regexSemVer) && i < n)
 		if (oldSemVer != mc.version) {
 			logger.lifecycle "→ project version changed"
 			logger.lifecycle "→ writing SemVer resource"
