@@ -17,6 +17,7 @@ package de.bernd_michaely.common.semver;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.Comparator;
 import java.util.List;
 import java.util.TreeSet;
@@ -41,8 +42,11 @@ public class SemanticVersionTest
 	 *
 	 * @see <a href="https://semver.org">semver.org</a>
 	 */
-	private static final String STR_REGEX_SEMANTIC_VERSION =
+	private static final String OFFICIAL_REGEX_SEMANTIC_VERSION =
 		"^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$";
+
+	// out of long range
+	private static final BigInteger BIG_NUMBER = new BigInteger("" + Long.MAX_VALUE).add(BigInteger.ONE);
 
 	private static final List<String> LIST_SORTED_STRICTLY_ASCENDING = List.of(
 		"0.0.0-0",
@@ -72,7 +76,8 @@ public class SemanticVersionTest
 		"9.9.10",
 		"9.10.9",
 		"10.9.9",
-		"10.10.10"
+		"10.10.10",
+		"%1$s.%1$s.%1$s-a.%1$s+b.%1$s".formatted(BIG_NUMBER)
 	);
 
 	@BeforeEach
@@ -91,11 +96,11 @@ public class SemanticVersionTest
 	@Test
 	public void test_SubRegEx()
 	{
-		final String reconstructed = SemanticVersion.SubRegEx.FULL_SEMANTIC_VERSION;
+		final String reconstructed = SemanticVersion.STR_REGEX_SEMANTIC_VERSION;
 		System.out.println("test_SubRegEx");
-		System.out.println("· official      : »" + STR_REGEX_SEMANTIC_VERSION + "«");
+		System.out.println("· official      : »" + OFFICIAL_REGEX_SEMANTIC_VERSION + "«");
 		System.out.println("· reconstructed : »" + reconstructed + "«");
-		assertEquals(STR_REGEX_SEMANTIC_VERSION, reconstructed);
+		assertEquals(OFFICIAL_REGEX_SEMANTIC_VERSION, reconstructed);
 	}
 
 	@Test
@@ -169,7 +174,7 @@ public class SemanticVersionTest
 		assertEquals(1, build6.getIdentifiers().size());
 		final Identifier id6 = build6.getIdentifiers().get(0);
 		assertTrue(id6.isNumeric());
-		assertEquals(1, id6.getOptionalNumber().get());
+		assertEquals(1, id6.getOptionalNumber().get().intValueExact());
 		assertEquals("001", id6.toString());
 		assertTrue(SemanticVersion.check("1.0.0"));
 		assertFalse(SemanticVersion.check("x.y.z"));
@@ -285,13 +290,13 @@ public class SemanticVersionTest
 	{
 		assertEquals(4, identifiers.size());
 		assertTrue(identifiers.get(0).isNumeric());
-		assertEquals(5, identifiers.get(0).getOptionalNumber().get());
+		assertEquals(5, identifiers.get(0).getOptionalNumber().get().intValueExact());
 		assertEquals("5", identifiers.get(0).toString());
 		assertFalse(identifiers.get(1).isNumeric());
 		assertFalse(identifiers.get(1).getOptionalNumber().isPresent());
 		assertEquals("b", identifiers.get(1).toString());
 		assertTrue(identifiers.get(2).isNumeric());
-		assertEquals(7, identifiers.get(2).getOptionalNumber().get());
+		assertEquals(7, identifiers.get(2).getOptionalNumber().get().intValueExact());
 		assertEquals("7", identifiers.get(2).toString());
 		assertFalse(identifiers.get(3).isNumeric());
 	}
@@ -314,10 +319,11 @@ public class SemanticVersionTest
 			() -> Identifier.of("#", Identifier.Type.PRE_RELEASE), "~#");
 		assertThrows(InvalidSemanticVersionException.class,
 			() -> Identifier.of("#", Identifier.Type.BUILD), "~#");
-		final String hugeValue = "" + Long.MAX_VALUE;
-		final Identifier idHuge = new Identifier(hugeValue);
-		assertFalse(idHuge.isNumeric()); // silently suppress overflow
-		assertEquals(hugeValue, idHuge.getPart());
+		final Identifier bigIdentifier = new Identifier(BIG_NUMBER.toString());
+		assertTrue(bigIdentifier.isNumeric());
+		assertEquals(Long.MAX_VALUE,
+			bigIdentifier.getOptionalNumber().get().subtract(BigInteger.ONE).longValueExact());
+		assertEquals(BIG_NUMBER.toString(), bigIdentifier.getPart());
 	}
 
 	@Test
@@ -334,6 +340,11 @@ public class SemanticVersionTest
 		assertNotEquals(NumericIdentifier.of("17"), PreRelease.of("-abc.2.def"));
 		assertEquals(NumericIdentifier.of("17"), new NumericIdentifier("17"));
 		assertNotEquals(NumericIdentifier.of("17"), new NumericIdentifier("18"));
+		final NumericIdentifier bigNumericIdentifier = new NumericIdentifier(BIG_NUMBER.toString());
+		assertEquals(Long.MAX_VALUE,
+			bigNumericIdentifier.getNumberValue().subtract(BigInteger.ONE).longValueExact());
+		assertTrue(bigNumericIdentifier.getNumber() < 0);
+		assertEquals(BIG_NUMBER.toString(), bigNumericIdentifier.getPart());
 	}
 
 	@Test

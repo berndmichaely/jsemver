@@ -15,6 +15,7 @@
  */
 package de.bernd_michaely.common.semver;
 
+import java.math.BigInteger;
 import java.util.EnumMap;
 import java.util.Optional;
 import java.util.regex.Matcher;
@@ -30,10 +31,12 @@ public final class Identifier implements Comparable<Identifier>
 {
 	private final String part;
 	@SuppressWarnings("optional.field")
-	private final Optional<Integer> optionalNumber;
+	private final Optional<BigInteger> optionalNumber;
 
 	/**
 	 * Type of Identifier.
+	 *
+	 * @since 2.0.0
 	 */
 	public enum Type
 	{
@@ -51,11 +54,11 @@ public final class Identifier implements Comparable<Identifier>
 	Identifier(String part)
 	{
 		this.part = part;
-		Optional<Integer> optional;
+		Optional<BigInteger> optional;
 		try
 		{
-			final int num = Integer.parseInt(part);
-			optional = num >= 0 ? Optional.of(num) : Optional.empty();
+			final var num = new BigInteger(part);
+			optional = num.compareTo(BigInteger.ZERO) >= 0 ? Optional.of(num) : Optional.empty();
 		}
 		catch (NumberFormatException ex)
 		{
@@ -123,8 +126,9 @@ public final class Identifier implements Comparable<Identifier>
 	 *
 	 * @return the number value, if numeric, otherwise an empty optional
 	 * @see #isNumeric()
+	 * @since 3.0.0
 	 */
-	public Optional<Integer> getOptionalNumber()
+	public Optional<BigInteger> getOptionalNumber()
 	{
 		return optionalNumber;
 	}
@@ -134,7 +138,7 @@ public final class Identifier implements Comparable<Identifier>
 	{
 		if (this.optionalNumber.isPresent() && other.optionalNumber.isPresent())
 		{
-			return Integer.compare(this.optionalNumber.get(), other.optionalNumber.get());
+			return this.optionalNumber.get().compareTo(other.optionalNumber.get());
 		}
 		else if (!this.optionalNumber.isPresent() && !other.optionalNumber.isPresent())
 		{
@@ -162,7 +166,7 @@ public final class Identifier implements Comparable<Identifier>
 	@Override
 	public int hashCode()
 	{
-		return part.hashCode();
+		return getOptionalNumber().map(BigInteger::hashCode).orElse(getPart().hashCode());
 	}
 
 	/**
@@ -173,7 +177,7 @@ public final class Identifier implements Comparable<Identifier>
 	 */
 	public boolean equalsIgnoreCase(Identifier other)
 	{
-		return this.part.equalsIgnoreCase(other.part);
+		return getPart().equalsIgnoreCase(other.getPart());
 	}
 
 	/**

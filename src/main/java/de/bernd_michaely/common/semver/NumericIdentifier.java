@@ -15,6 +15,7 @@
  */
 package de.bernd_michaely.common.semver;
 
+import java.math.BigInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
@@ -30,27 +31,21 @@ import static java.util.Objects.requireNonNullElse;
  */
 public final class NumericIdentifier extends VersionPart implements Comparable<NumericIdentifier>
 {
-	private final int number;
+	static final int NUM_OVERFLOW = -1;
 	private static @MonotonicNonNull Pattern patternNumericIdentifier;
+	private final BigInteger number;
 
-	NumericIdentifier(@Nullable String versionPart)
+	NumericIdentifier(String versionPart)
 	{
-		super(requireNonNullElse(versionPart, ""));
+		super(versionPart);
 		try
 		{
-			this.number = parseInt(versionPart);
+			number = new BigInteger(versionPart);
 		}
 		catch (NumberFormatException ex)
 		{
 			throw new IllegalStateException(ex);
 		}
-	}
-
-	@SuppressWarnings("argument")
-	static int parseInt(@Nullable String s)
-	{
-		// a null argument will throw a NumberFormatException, not a NPE
-		return Integer.parseInt(s);
 	}
 
 	private static Matcher getMatcher(String preRelease)
@@ -83,11 +78,32 @@ public final class NumericIdentifier extends VersionPart implements Comparable<N
 	}
 
 	/**
+	 * Returns the numeric value of this identifier. If the correct value is
+	 * greater than {@code 2^31-1}, returns a negative value.
+	 *
+	 * @return the numeric value
+	 * @see #getNumberValue()
+	 */
+	int getNumber()
+	{
+		try
+		{
+			return number.intValueExact();
+		}
+		catch (ArithmeticException ex)
+		{
+			return NUM_OVERFLOW;
+		}
+	}
+
+	/**
 	 * Returns the numeric value of this identifier.
 	 *
 	 * @return the numeric value
+	 * @see #getNumber()
+	 * @since 3.0.0
 	 */
-	int getNumber()
+	BigInteger getNumberValue()
 	{
 		return number;
 	}
@@ -95,7 +111,7 @@ public final class NumericIdentifier extends VersionPart implements Comparable<N
 	@Override
 	public int compareTo(NumericIdentifier other)
 	{
-		return Integer.compare(this.number, other.number);
+		return this.getNumberValue().compareTo(other.getNumberValue());
 	}
 
 	@Override
@@ -114,6 +130,6 @@ public final class NumericIdentifier extends VersionPart implements Comparable<N
 	@Override
 	public int hashCode()
 	{
-		return number;
+		return getNumberValue().hashCode();
 	}
 }

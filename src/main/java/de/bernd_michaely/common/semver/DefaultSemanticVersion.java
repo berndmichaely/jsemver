@@ -19,6 +19,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.math.BigInteger;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
@@ -70,14 +71,24 @@ final class DefaultSemanticVersion implements SemanticVersion
 		{
 			if (matcher.groupCount() >= 5)
 			{
-				final String p = matcher.group(4);
-				final String b = matcher.group(5);
-				return new DefaultSemanticVersion(
-					new NumericIdentifier(matcher.group(1)),
-					new NumericIdentifier(matcher.group(2)),
-					new NumericIdentifier(matcher.group(3)),
-					p != null ? new PreRelease(p) : null,
-					b != null ? new Build(b) : null);
+				final String mg1 = matcher.group(1);
+				final String mg2 = matcher.group(2);
+				final String mg3 = matcher.group(3);
+				final String mg4 = matcher.group(4);
+				final String mg5 = matcher.group(5);
+				if (mg1 != null && mg2 != null && mg3 != null)
+				{
+					return new DefaultSemanticVersion(
+						new NumericIdentifier(mg1),
+						new NumericIdentifier(mg2),
+						new NumericIdentifier(mg3),
+						mg4 != null ? new PreRelease(mg4) : null,
+						mg5 != null ? new Build(mg5) : null);
+				}
+				else
+				{
+					throw new IllegalStateException("Inconsistent regex check");
+				}
 			}
 			else
 			{
@@ -149,15 +160,33 @@ final class DefaultSemanticVersion implements SemanticVersion
 	}
 
 	@Override
+	public BigInteger getMajorValue()
+	{
+		return major.getNumberValue();
+	}
+
+	@Override
 	public int getMinor()
 	{
 		return minor.getNumber();
 	}
 
 	@Override
+	public BigInteger getMinorValue()
+	{
+		return minor.getNumberValue();
+	}
+
+	@Override
 	public int getPatch()
 	{
 		return patch.getNumber();
+	}
+
+	@Override
+	public BigInteger getPatchValue()
+	{
+		return patch.getNumberValue();
 	}
 
 	@Override
@@ -182,9 +211,9 @@ final class DefaultSemanticVersion implements SemanticVersion
 	}
 
 	private static final Comparator<SemanticVersion> semanticVersionComparator =
-		Comparator.comparingInt(SemanticVersion::getMajor)
-			.thenComparingInt(SemanticVersion::getMinor)
-			.thenComparingInt(SemanticVersion::getPatch)
+		Comparator.comparing(SemanticVersion::getMajorValue)
+			.thenComparing(SemanticVersion::getMinorValue)
+			.thenComparing(SemanticVersion::getPatchValue)
 			.thenComparing((sv1, sv2) ->
 			{
 				final Optional<PreRelease> opt1 = sv1.getPreRelease();
@@ -252,7 +281,8 @@ final class DefaultSemanticVersion implements SemanticVersion
 	@Override
 	public String getDescription()
 	{
-		return "%d.%d.%d%s%s".formatted(getMajor(), getMinor(), getPatch(),
+		return "%s.%s.%s%s%s".formatted(
+			major.getPart(), minor.getPart(), patch.getPart(),
 			preRelease.map(p -> " pre-release »%s«".formatted(p)).orElse(""),
 			build.map(b -> " build »%s«".formatted(b)).orElse(""));
 	}
@@ -266,7 +296,8 @@ final class DefaultSemanticVersion implements SemanticVersion
 	@Override
 	public String toString()
 	{
-		return "%d.%d.%d%s%s".formatted(getMajor(), getMinor(), getPatch(),
+		return "%s.%s.%s%s%s".formatted(
+			major.getPart(), minor.getPart(), patch.getPart(),
 			preRelease.map(p -> "-" + p).orElse(""),
 			build.map(b -> "+" + b).orElse(""));
 	}

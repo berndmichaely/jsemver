@@ -17,6 +17,7 @@ package de.bernd_michaely.common.semver;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigInteger;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -34,6 +35,8 @@ public sealed interface SemanticVersion extends Comparable<SemanticVersion>
 	/**
 	 * Interface to describe structural parts of the official regular expression
 	 * for semantic versioning.
+	 *
+	 * @since 3.0.0
 	 */
 	interface SubRegEx
 	{
@@ -43,7 +46,7 @@ public sealed interface SemanticVersion extends Comparable<SemanticVersion>
 		@Regex
 		String DOT_SEPARATOR = "\\.";
 		/**
-		 * Regular expression for numeric identifiers.
+		 * Regular expression for numeric identifiers without leading zeros.
 		 */
 		@Regex
 		String NUMERIC_IDENTIFIER = "0|[1-9]\\d*";
@@ -92,25 +95,65 @@ public sealed interface SemanticVersion extends Comparable<SemanticVersion>
 	}
 
 	/**
+	 * Official regular expression for semantic versioning.
+	 *
+	 * @see <a href="https://semver.org">semver.org</a>
+	 */
+	String STR_REGEX_SEMANTIC_VERSION = SubRegEx.FULL_SEMANTIC_VERSION;
+
+	/**
+	 * Returns the major version. If the correct value is greater than
+	 * {@code 2^31-1}, returns a negative value.
+	 *
+	 * @return the major version
+	 * @see #getMajorValue()
+	 */
+	int getMajor();
+
+	/**
 	 * Returns the major version.
 	 *
 	 * @return the major version
+	 * @see #getMajor()
+	 * @since 3.0.0
 	 */
-	int getMajor();
+	BigInteger getMajorValue();
+
+	/**
+	 * Returns the minor version. If the correct value is greater than
+	 * {@code 2^31-1}, returns a negative value.
+	 *
+	 * @return the minor version
+	 * @see #getMinorValue()
+	 */
+	int getMinor();
 
 	/**
 	 * Returns the minor version.
 	 *
 	 * @return the minor version
+	 * @see #getMinor()
+	 * @since 3.0.0
 	 */
-	int getMinor();
+	BigInteger getMinorValue();
+
+	/**
+	 * Returns the patch version. If the correct value is greater than
+	 * {@code 2^31-1}, returns a negative value.
+	 *
+	 * @return the patch version
+	 * @see #getPatchValue()
+	 */
+	int getPatch();
 
 	/**
 	 * Returns the patch version.
 	 *
 	 * @return the patch version
+	 * @see #getPatch()
+	 * @since 3.0.0
 	 */
-	int getPatch();
+	BigInteger getPatchValue();
 
 	/**
 	 * Returns the optional pre-release version.

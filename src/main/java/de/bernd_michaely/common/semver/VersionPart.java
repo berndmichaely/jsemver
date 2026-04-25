@@ -27,6 +27,10 @@ public abstract sealed class VersionPart permits NumericIdentifier, DotSeparated
 
 	VersionPart(String versionPart)
 	{
+		if (versionPart == null || versionPart.isBlank())
+		{
+			throw new IllegalStateException();
+		}
 		this.part = versionPart;
 	}
 
