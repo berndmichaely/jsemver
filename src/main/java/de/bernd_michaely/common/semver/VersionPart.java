@@ -43,15 +43,4 @@ public abstract sealed class VersionPart permits NumericIdentifier, DotSeparated
 	{
 		return part;
 	}
-
-	/**
-	 * Returns the original constructor parameter.
-	 *
-	 * @return the original constructor parameter
-	 */
-	@Override
-	public String toString()
-	{
-		return getPart();
-	}
 }

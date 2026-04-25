@@ -266,6 +266,14 @@ public sealed interface SemanticVersion extends Comparable<SemanticVersion>
 	List<VersionPart> getVersionParts();
 
 	/**
+	 * Returns the semantic version in its canonical form.
+	 *
+	 * @return the canonical form of the semantic version
+	 * @see #getDescription()
+	 */
+	String getCanonicalForm();
+
+	/**
 	 * Returns a more verbose string than the canonical form. {@code toString()}
 	 * returns the semantic version in its canonical form.
 	 *

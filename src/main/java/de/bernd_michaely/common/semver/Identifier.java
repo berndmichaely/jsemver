@@ -201,6 +201,6 @@ public final class Identifier implements Comparable<Identifier>
 	@Override
 	public String toString()
 	{
-		return getPart();
+		return "Id(%s:%s)".formatted(isNumeric() ? "#" : "A", getPart());
 	}
 }

@@ -19,6 +19,8 @@ import java.util.Arrays;
 import java.util.List;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 
+import static java.util.stream.Collectors.joining;
+
 /**
  * Base class to handle a dot separated semantic version part.
  */
@@ -65,5 +67,12 @@ public abstract sealed class DotSeparatedVersionPart extends VersionPart
 	int compareTo(DotSeparatedVersionPart other)
 	{
 		return Arrays.compare(this.identifiers(), other.identifiers());
+	}
+
+	@Override
+	public String toString()
+	{
+		return "%s[%s]".formatted(getClass().getSimpleName(),
+			getIdentifiers().stream().map(Identifier::toString).collect(joining("/")));
 	}
 }

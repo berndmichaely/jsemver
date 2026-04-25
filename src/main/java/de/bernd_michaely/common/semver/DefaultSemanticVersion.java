@@ -31,6 +31,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 import static java.util.Objects.requireNonNull;
 import static java.util.Objects.requireNonNullElse;
+import static java.util.stream.Collectors.joining;
 
 /**
  * Default implementation of the SemanticVersion interface.
@@ -279,26 +280,28 @@ final class DefaultSemanticVersion implements SemanticVersion
 	}
 
 	@Override
+	public String getCanonicalForm()
+	{
+		return "%s.%s.%s%s%s".formatted(
+			major.getPart(), minor.getPart(), patch.getPart(),
+			preRelease.map(p -> "-" + p.getPart()).orElse(""),
+			build.map(b -> "+" + b.getPart()).orElse(""));
+	}
+
+	@Override
 	public String getDescription()
 	{
 		return "%s.%s.%s%s%s".formatted(
 			major.getPart(), minor.getPart(), patch.getPart(),
-			preRelease.map(p -> " pre-release »%s«".formatted(p)).orElse(""),
-			build.map(b -> " build »%s«".formatted(b)).orElse(""));
+			preRelease.map(p -> " pre-release »%s«".formatted(p.getPart())).orElse(""),
+			build.map(b -> " build »%s«".formatted(b.getPart())).orElse(""));
 	}
 
-	/**
-	 * Returns the semantic version in its canonical form.
-	 *
-	 * @return the canonical form of the semantic version
-	 * @see #getDescription()
-	 */
 	@Override
 	public String toString()
 	{
-		return "%s.%s.%s%s%s".formatted(
-			major.getPart(), minor.getPart(), patch.getPart(),
-			preRelease.map(p -> "-" + p).orElse(""),
-			build.map(b -> "+" + b).orElse(""));
+		return "SemVer_{%s}".formatted(
+			getVersionParts().stream().map(VersionPart::toString)
+				.collect(joining("_")));
 	}
 }

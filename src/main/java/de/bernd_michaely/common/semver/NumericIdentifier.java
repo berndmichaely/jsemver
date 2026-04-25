@@ -132,4 +132,10 @@ public final class NumericIdentifier extends VersionPart implements Comparable<N
 	{
 		return getNumberValue().hashCode();
 	}
+
+	@Override
+	public String toString()
+	{
+		return "NumId(%s)".formatted(getPart());
+	}
 }
