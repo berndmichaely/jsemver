@@ -4,7 +4,7 @@
 
 **JSemVer** is a modular Java library to implement the Semantic Versioning 2.0.0 specification found at [semver.org](https://semver.org/).
 
-It is available at maven coordinates:
+Releases are available at maven coordinates:
 
 ```
 de.bernd-michaely:jsemver:${version}
@@ -27,10 +27,11 @@ module de.bernd_michaely.common.semver
 ```java
 import de.bernd_michaely.common.semver.*;
 
-final var sv = new SemanticVersion("1.0.0-rc.3+xyz");
+final var sv = SemanticVersion.of("1.0.0-rc.3+xyz");
 
-System.out.println (sv.toString());
+System.out.println (sv.getCanonicalForm());
 System.out.println (sv.getDescription());
+System.out.println (sv.toString());
 ```
 
 ##### output:
@@ -38,24 +39,27 @@ System.out.println (sv.getDescription());
 ```
 1.0.0-rc.3+xyz
 1.0.0 pre-release »rc.3« build »xyz«
+SemVer_{NumId(1)_NumId(0)_NumId(0)_PreRelease[Id(A:rc)/Id(#:3)]_Build[Id(A:xyz)]}
 ```
 
 ##### example:
 
 
 ```java
-final List<Identifier> ids = sv.getPreRelease().getIdentifiers();
+final List<Identifier> ids = sv.getPreRelease().get().getIdentifiers();
 
-if (ids.size() >= 2 && ids.get(0).equalsIgnoreCase(Identifier.of("RC", Identifier.Type.PRE_RELEASE)) && ids.get(1).isNumeric())
-  System.out.println ("%s is release candidate %d.".formatted(sv, ids.get(1).getNumber()));
+if (ids.size() >= 2 &&
+    ids.get(0).equalsIgnoreCase(Identifier.of("RC", Identifier.Type.PRE_RELEASE)) &&
+    ids.get(1).isNumeric())
+  System.out.println ("%s is release candidate %d.".formatted(sv.getDescription(), ids.get(1).getOptionalNumber().get()));
 else
-  System.out.println ("%s is not a release candidate.".formatted(sv));
+  System.out.println ("%s is not a release candidate.".formatted(sv.getDescription()));
 ```
 
 ##### output:
 
 ```
-1.0.0-rc.3+xyz is release candidate 3.
+1.0.0 pre-release »rc.3« build »xyz« is release candidate 3.
 ```
 
 ##### example:
@@ -65,28 +69,28 @@ void compareSemanticVersions(SemanticVersion sv1, SemanticVersion sv2)
 {
   final int c = sv1.compareTo(sv2);
   final String s = c > 0 ? "greater than" : (c < 0 ? "less than" : "equal to");
-  System.out.println ("'%s' is %s '%s'".formatted(sv1, s, sv2));
+  System.out.println ("'%s' is %s '%s'".formatted(sv1.getDescription(), s, sv2.getDescription()));
 }
 
 compareSemanticVersions(
-  new SemanticVersion("1.0.0-rc.9"),
-  new SemanticVersion("1.0.0-rc.10"));
+  SemanticVersion.of("1.0.0-rc.9"),
+  SemanticVersion.of("1.0.0-rc.10"));
 
 compareSemanticVersions(
-  new SemanticVersion("1.0.0-rc.3"),
-  new SemanticVersion("1.0.0"));
+  SemanticVersion.of("1.0.0-rc.3"),
+  SemanticVersion.of("1.0.0"));
 
 compareSemanticVersions(
-  new SemanticVersion("1.0.0"),
-  new SemanticVersion("1.0.0+build.id"));
+  SemanticVersion.of("1.0.0"),
+  SemanticVersion.of("1.0.0+build.id"));
 ```
 
 ##### output:
 
 ```
-'1.0.0-rc.9' is less than '1.0.0-rc.10'
+'1.0.0 pre-release »rc.9«' is less than '1.0.0 pre-release »rc.10«'
 
-'1.0.0-rc.3' is less than '1.0.0'
+'1.0.0 pre-release »rc.3«' is less than '1.0.0'
 
-'1.0.0' is equal to '1.0.0+build.id'
+'1.0.0' is equal to '1.0.0 build »build.id«'
 ```
