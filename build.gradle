@@ -134,34 +134,11 @@ _map.each { key, value ->
 }
 logger.lifecycle _line
 
-def _getVersionShield(Map<String,?> mc, File fileVersionShield) {
-	final def toShieldParam = { it replaceAll "-", "--" replaceAll "_", "__" replaceAll "\\s", "_"  }
-	final String label = toShieldParam mc.artifact
-	final String message = toShieldParam (mc.version - ~/\+.*$/)
-	final String color = 'blue'
-	final def url = new URI("https://img.shields.io/badge/${label}-${message}-${color}").toURL()
-	logger.lifecycle "→ getting data from URL »${url}«"
-	fileVersionShield.write url.text
-}
-
 task writeSemVer {
 	description = "Write application semantic version to resource file »${fileSemVer}«"
 	group = processResources.group
 	doFirst {
-		final List<String> lines = fileSemVer.readLines()
-		final int n = lines.size()
-		String oldSemVer
-		int i = 0
-		do {
-			oldSemVer = lines.get(i++).trim()
-		} while (!(oldSemVer =~ regexSemVer) && i < n)
-		if (oldSemVer != mc.version) {
-			logger.lifecycle "→ project version changed"
-			logger.lifecycle "→ writing SemVer resource"
-			fileSemVer.write mc.version
-			logger.lifecycle "→ writing version shield"
-			_getVersionShield(mc, fileVersionShield)
-		}
+		fileSemVer.write(mc.version)
 	}
 }
 processResources.dependsOn writeSemVer
@@ -169,8 +146,14 @@ processResources.dependsOn writeSemVer
 task getVersionShield {
 	description = "Generate a version shield by accessing shields.io and write it to file »${fileVersionShield}«"
 	group = javadoc.group
+	final def toShieldParam = { it replaceAll "-", "--" replaceAll "_", "__" replaceAll "\\s", "_"  }
 	doLast {
-		_getVersionShield(mc, fileVersionShield)
+		final String label = toShieldParam mc.artifact
+		final String message = toShieldParam (mc.version - ~/\+.*$/)
+		final String color = 'blue'
+		final def url = new URI("https://img.shields.io/badge/${label}-${message}-${color}").toURL()
+		logger.lifecycle "→ getting data from URL »${url}«"
+		fileVersionShield.write url.text
 	}
 }
 
