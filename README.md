@@ -4,13 +4,13 @@
 
 **JSemVer** is a modular Java library to implement the Semantic Versioning 2.0.0 specification found at [semver.org](https://semver.org/).
 
-Releases are available at maven coordinates:
+Releases are available at **maven coordinates**:
 
 ```
 de.bernd-michaely:jsemver:${version}
 ```
 
-#### Dependencies
+#### Module info
 
 ```java
 module de.bernd_michaely.common.semver
@@ -20,9 +20,9 @@ module de.bernd_michaely.common.semver
 }
 ```
 
-#### Usage
+#### Usage examples
 
-##### example:
+##### Formatting / pretty printing
 
 ```java
 import de.bernd_michaely.common.semver.*;
@@ -34,16 +34,50 @@ System.out.println (sv.getDescription());
 System.out.println (sv.toString());
 ```
 
-##### output:
+###### output:
 
 ```
 1.0.0-rc.3+xyz
+
 1.0.0 pre-release »rc.3« build »xyz«
+
 SemVer_{NumId(1)_NumId(0)_NumId(0)_PreRelease[Id(A:rc)/Id(#:3)]_Build[Id(A:xyz)]}
 ```
 
-##### example:
+##### Writing to / reading from resource
 
+Write a semantic version to a resource file, e.g. using a Gradle task like:
+
+```groovy
+final def fileSemVer = file('src/main/resources/com/example/path/to/semantic_version.txt')
+
+task writeSemVer {
+  description = "Write application semantic version to resource file »${fileSemVer}«"
+  group = processResources.group
+  doFirst {
+    fileSemVer.write(version)
+  }
+}
+processResources.dependsOn writeSemVer
+```
+
+Read the semantic version from the resource, e.g.:
+
+```java
+try (var inputStream = getClass().getResourceAsStream("semantic_version.txt"))
+{
+  if (inputStream != null)
+  {
+    semanticVersion = SemanticVersion.of(inputStream);
+  }
+  else
+  {
+    throw new IllegalStateException("resource not found");
+  }
+}
+```
+
+##### Identifier details
 
 ```java
 final List<Identifier> ids = sv.getPreRelease().get().getIdentifiers();
@@ -51,18 +85,19 @@ final List<Identifier> ids = sv.getPreRelease().get().getIdentifiers();
 if (ids.size() >= 2 &&
     ids.get(0).equalsIgnoreCase(Identifier.of("RC", Identifier.Type.PRE_RELEASE)) &&
     ids.get(1).isNumeric())
-  System.out.println ("%s is release candidate %d.".formatted(sv.getDescription(), ids.get(1).getOptionalNumber().get()));
+  System.out.println ("%s is release candidate %d.".formatted(
+                      sv.getDescription(), ids.get(1).getOptionalNumber().get()));
 else
   System.out.println ("%s is not a release candidate.".formatted(sv.getDescription()));
 ```
 
-##### output:
+###### output:
 
 ```
 1.0.0 pre-release »rc.3« build »xyz« is release candidate 3.
 ```
 
-##### example:
+##### Comparison
 
 ```java
 void compareSemanticVersions(SemanticVersion sv1, SemanticVersion sv2)
@@ -85,7 +120,7 @@ compareSemanticVersions(
   SemanticVersion.of("1.0.0+build.id"));
 ```
 
-##### output:
+###### output:
 
 ```
 '1.0.0 pre-release »rc.9«' is less than '1.0.0 pre-release »rc.10«'
