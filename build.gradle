@@ -135,10 +135,10 @@ _map.each { key, value ->
 logger.lifecycle _line
 
 task writeSemVer {
-	description = "Write application semantic version to resource file »${fileSemVer}«"
+	description = "Write semantic version of library to resource file »${fileSemVer}«"
 	group = processResources.group
 	doFirst {
-		fileSemVer.write(mc.version)
+		fileSemVer.write mc.version
 	}
 }
 processResources.dependsOn writeSemVer

@@ -52,10 +52,10 @@ Write a semantic version to a resource file, e.g. using a Gradle task like:
 final def fileSemVer = file('src/main/resources/com/example/path/to/semantic_version.txt')
 
 task writeSemVer {
-  description = "Write application semantic version to resource file »${fileSemVer}«"
+  description = "Write semantic version to resource file »${fileSemVer}«"
   group = processResources.group
   doFirst {
-    fileSemVer.write(version)
+    fileSemVer.write version
   }
 }
 processResources.dependsOn writeSemVer
