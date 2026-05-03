@@ -1,5 +1,9 @@
 # ChangeLog for JSemVer library
 
+## v3.0.1
+
+  * reworking unit tests to use [AssertJ](https://github.com/assertj/assertj)
+
 ## v3.0.0
 
   * replaced `SemanticVersion` class and public constructors by interface and factory methods

@@ -23,11 +23,13 @@ import java.util.List;
 import java.util.TreeSet;
 import java.util.function.Function;
 import java.util.stream.Stream;
+import org.assertj.core.api.Condition;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toUnmodifiableList;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -452,17 +454,16 @@ public class SemanticVersionTest
 	@Test
 	public void test_getCanonicalForm()
 	{
-		System.out.println("test_getCanonicalForm");
-		Stream.concat(
-			Stream.of(
-				"2.3.4",
-				"2.3.4-rc.1",
-				"2.3.4+r17",
-				"2.3.4-rc.1+r17"),
-			LIST_SORTED_STRICTLY_ASCENDING.stream()
-		)
-			.forEach(version ->
-				assertEquals(version, SemanticVersion.of(version).getCanonicalForm()));
+		final Condition<String> condition = new Condition<>(
+			version -> version.equals(SemanticVersion.of(version).getCanonicalForm()),
+			"returns original String");
+		assertThat(List.of(
+			"2.3.4",
+			"2.3.4-rc.1",
+			"2.3.4+r17",
+			"2.3.4-rc.1+r17"
+		)).have(condition);
+		assertThat(LIST_SORTED_STRICTLY_ASCENDING).have(condition);
 	}
 
 	@Test
