@@ -449,22 +449,20 @@ public class SemanticVersionTest
 		assertEquals(new Build("abcxyz").hashCode(), new Build("abcxyz").hashCode());
 	}
 
-	private void _test_getCanonicalForm(String version)
-	{
-		assertEquals(version, SemanticVersion.of(version).getCanonicalForm());
-	}
-
 	@Test
-	public void test_toString()
+	public void test_getCanonicalForm()
 	{
-		System.out.println("test_toString");
-		_test_getCanonicalForm("1.0.0-rc.1");
-		_test_getCanonicalForm("1.0.0+r17");
-		_test_getCanonicalForm("1.0.0-rc.1+r17");
-		_test_getCanonicalForm("1.0.0");
-		_test_getCanonicalForm("2.3.4-rc.1+b17");
-		LIST_SORTED_STRICTLY_ASCENDING.forEach(version ->
-			assertEquals(version, SemanticVersion.of(version).getCanonicalForm()));
+		System.out.println("test_getCanonicalForm");
+		Stream.concat(
+			Stream.of(
+				"2.3.4",
+				"2.3.4-rc.1",
+				"2.3.4+r17",
+				"2.3.4-rc.1+r17"),
+			LIST_SORTED_STRICTLY_ASCENDING.stream()
+		)
+			.forEach(version ->
+				assertEquals(version, SemanticVersion.of(version).getCanonicalForm()));
 	}
 
 	@Test
