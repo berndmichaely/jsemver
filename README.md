@@ -4,7 +4,9 @@
 
 **JSemVer** is a modular Java library to implement the Semantic Versioning 2.0.0 specification found at [semver.org](https://semver.org/).
 
-Releases are available at **maven coordinates**:
+#### Maven coordinates
+
+Releases are available at:
 
 ```
 de.bernd-michaely:jsemver:${version}
@@ -22,7 +24,7 @@ module de.bernd_michaely.common.semver
 
 #### Usage examples
 
-##### Formatting / pretty printing
+##### Formatting / pretty-printing
 
 ```java
 import de.bernd_michaely.common.semver.*;
