@@ -55,12 +55,19 @@ public final class Identifier implements Comparable<Identifier>
 	{
 		this.part = part;
 		Optional<BigInteger> optional;
-		try
+		if (this.part.charAt(0) != '-')
 		{
-			final var num = new BigInteger(part);
-			optional = num.compareTo(BigInteger.ZERO) >= 0 ? Optional.of(num) : Optional.empty();
+			try
+			{
+				final var num = new BigInteger(part);
+				optional = num.signum() >= 0 ? Optional.of(num) : Optional.empty();
+			}
+			catch (NumberFormatException ex)
+			{
+				optional = Optional.empty();
+			}
 		}
-		catch (NumberFormatException ex)
+		else
 		{
 			optional = Optional.empty();
 		}
