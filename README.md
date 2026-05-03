@@ -80,6 +80,7 @@ try (var inputStream = getClass().getResourceAsStream("semantic_version.txt"))
 ##### Identifier details
 
 ```java
+final var sv = SemanticVersion.of("1.0.0-rc.3+xyz");
 final List<Identifier> ids = sv.getPreRelease().get().getIdentifiers();
 
 if (ids.size() >= 2 &&
