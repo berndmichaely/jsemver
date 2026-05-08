@@ -463,6 +463,9 @@ public class SemanticVersionTest
 		)
 			.forEach(version ->
 				assertEquals(version, SemanticVersion.of(version).getCanonicalForm()));
+		assertEquals(
+			SemanticVersion.of("2.3.4-rc.1").getCanonicalForm(),
+			SemanticVersion.of("2.3.4-rc.1+r17").getCanonicalForm(true));
 	}
 
 	@Test
@@ -477,6 +480,9 @@ public class SemanticVersionTest
 			.map(sv -> ("· %" + maxLength + "s -> %s").formatted(sv, sv.getDescription()))
 			.forEach(System.out::println);
 		assertTrue(SemanticVersion.of("1.0.0+xy").getDescription().startsWith("1.0.0"));
+		assertEquals(
+			SemanticVersion.of("2.3.4-rc.1").getDescription(),
+			SemanticVersion.of("2.3.4-rc.1+r17").getDescription(true));
 	}
 
 	@Test

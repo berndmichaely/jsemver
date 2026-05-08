@@ -280,21 +280,33 @@ final class DefaultSemanticVersion implements SemanticVersion
 	}
 
 	@Override
-	public String getCanonicalForm()
+	public String getCanonicalForm(boolean excludeBuild)
 	{
-		return "%s.%s.%s%s%s".formatted(
-			major.getPart(), minor.getPart(), patch.getPart(),
-			preRelease.map(p -> "-" + p.getPart()).orElse(""),
-			build.map(b -> "+" + b.getPart()).orElse(""));
+		final StringBuilder s = new StringBuilder();
+		s.append(major.getPart())
+			.append('.').append(minor.getPart())
+			.append('.').append(patch.getPart());
+		preRelease.ifPresent(p -> s.append('-').append(p.getPart()));
+		if (!excludeBuild)
+		{
+			build.ifPresent(b -> s.append('+').append(b.getPart()));
+		}
+		return s.toString();
 	}
 
 	@Override
-	public String getDescription()
+	public String getDescription(boolean excludeBuild)
 	{
-		return "%s.%s.%s%s%s".formatted(
-			major.getPart(), minor.getPart(), patch.getPart(),
-			preRelease.map(p -> " pre-release »%s«".formatted(p.getPart())).orElse(""),
-			build.map(b -> " build »%s«".formatted(b.getPart())).orElse(""));
+		final StringBuilder s = new StringBuilder();
+		s.append(major.getPart())
+			.append('.').append(minor.getPart())
+			.append('.').append(patch.getPart());
+		preRelease.ifPresent(p -> s.append(" pre-release »").append(p.getPart()).append("«"));
+		if (!excludeBuild)
+		{
+			build.ifPresent(b -> s.append(" build »").append(b.getPart()).append("«"));
+		}
+		return s.toString();
 	}
 
 	@Override

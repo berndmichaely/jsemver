@@ -266,18 +266,44 @@ public sealed interface SemanticVersion extends Comparable<SemanticVersion>
 	List<VersionPart> getVersionParts();
 
 	/**
+	 * Returns the semantic version in its canonical form. Same as
+	 * {@code getCanonicalForm(false)}.
+	 *
+	 * @return the canonical form of the semantic version
+	 * @see #getCanonicalForm(boolean)
+	 */
+	default String getCanonicalForm()
+	{
+		return getCanonicalForm(false);
+	}
+
+	/**
 	 * Returns the semantic version in its canonical form.
 	 *
+	 * @param excludeBuild if true, don't include the build info in the result
 	 * @return the canonical form of the semantic version
 	 * @see #getDescription()
 	 */
-	String getCanonicalForm();
+	String getCanonicalForm(boolean excludeBuild);
 
 	/**
-	 * Returns a more verbose string than the canonical form. {@code toString()}
-	 * returns the semantic version in its canonical form.
+	 * Returns a more verbose string than the canonical form. Same as
+	 * {@code getDescription(false)}.
 	 *
 	 * @return a more verbose string than the canonical form
+	 * @see #getDescription(boolean)
 	 */
-	String getDescription();
+	default String getDescription()
+	{
+		return getDescription(false);
+	}
+
+	/**
+	 * Returns a more verbose string than the canonical form.
+	 *
+	 * @param excludeBuild if true, don't include the build info in the result
+	 * @return a more verbose string than the canonical form
+	 * @see #getCanonicalForm()
+	 */
+	String getDescription(boolean excludeBuild);
 }

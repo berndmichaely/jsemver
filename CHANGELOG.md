@@ -1,5 +1,9 @@
 # ChangeLog for JSemVer library
 
+## v3.1.0
+
+  * overloaded methods `SemanticVersion::getDescription` and `SemanticVersion::getCanonicalForm` to optionally exlude build info
+
 ## v3.0.0
 
   * replaced `SemanticVersion` class and public constructors by interface and factory methods
