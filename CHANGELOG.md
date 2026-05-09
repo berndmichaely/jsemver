@@ -2,7 +2,7 @@
 
 ## v3.1.0
 
-  * overloaded methods `SemanticVersion::getDescription` and `SemanticVersion::getCanonicalForm` to optionally exlude build info
+  * overloaded methods `SemanticVersion::getDescription` and `SemanticVersion::getCanonicalForm` to optionally exclude build info
 
 ## v3.0.0
 
