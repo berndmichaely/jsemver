@@ -2,8 +2,15 @@
 
 [versions]
 junit-jupiter = "6.0.1"
-checker = "4.0.0"
+assertj-core = "3.27.7"
+checker = "4.2.0"
+jsemver = "3.1.0"
 
 [libraries]
 junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit-jupiter" }
+assertj-core = { group = "org.assertj", name = "assertj-core", version.ref = "assertj-core" }
 checker = { group = "org.checkerframework", name = "checker", version.ref = "checker" }
+jsemver = { group = "de.bernd-michaely", name = "jsemver", version.ref = "jsemver" }
+
+[bundles]
+assertj = [ "assertj-core" ]
