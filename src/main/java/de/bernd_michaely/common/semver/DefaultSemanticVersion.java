@@ -29,6 +29,7 @@ import java.util.regex.Pattern;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
+import static de.bernd_michaely.common.semver.SemanticVersion.Format.*;
 import static java.util.Objects.requireNonNull;
 import static java.util.Objects.requireNonNullElse;
 import static java.util.stream.Collectors.joining;
@@ -280,28 +281,47 @@ final class DefaultSemanticVersion implements SemanticVersion
 	}
 
 	@Override
-	public String getCanonicalForm()
+	public String toString(@Nullable Format format, boolean excludeBuild)
 	{
-		return "%s.%s.%s%s%s".formatted(
-			major.getPart(), minor.getPart(), patch.getPart(),
-			preRelease.map(p -> "-" + p.getPart()).orElse(""),
-			build.map(b -> "+" + b.getPart()).orElse(""));
-	}
-
-	@Override
-	public String getDescription()
-	{
-		return "%s.%s.%s%s%s".formatted(
-			major.getPart(), minor.getPart(), patch.getPart(),
-			preRelease.map(p -> " pre-release »%s«".formatted(p.getPart())).orElse(""),
-			build.map(b -> " build »%s«".formatted(b.getPart())).orElse(""));
+		return switch (getFormatOrDefault(format))
+		{
+			case CANONICAL ->
+			{
+				final StringBuilder s = new StringBuilder();
+				s.append(major.getPart())
+					.append('.').append(minor.getPart())
+					.append('.').append(patch.getPart());
+				preRelease.ifPresent(p -> s.append('-').append(p.getPart()));
+				if (!excludeBuild)
+				{
+					build.ifPresent(b -> s.append('+').append(b.getPart()));
+				}
+				yield s.toString();
+			}
+			case VERBOSE ->
+			{
+				final StringBuilder s = new StringBuilder();
+				s.append(major.getPart())
+					.append('.').append(minor.getPart())
+					.append('.').append(patch.getPart());
+				preRelease.ifPresent(p -> s.append(" pre-release »").append(p.getPart()).append("«"));
+				if (!excludeBuild)
+				{
+					build.ifPresent(b -> s.append(" build »").append(b.getPart()).append("«"));
+				}
+				yield s.toString();
+			}
+			case STRUCTURED ->
+				"SemVer_{%s}".formatted(getVersionParts().stream()
+				.filter(versionPart -> !(excludeBuild && versionPart instanceof Build))
+				.map(VersionPart::toString)
+				.collect(joining("_")));
+		};
 	}
 
 	@Override
 	public String toString()
 	{
-		return "SemVer_{%s}".formatted(
-			getVersionParts().stream().map(VersionPart::toString)
-				.collect(joining("_")));
+		return toString(getDefaultFormat(), false);
 	}
 }
