@@ -1,8 +1,18 @@
 # ChangeLog for JSemVer library
 
+## v4.0.0
+
+  * reworked formatted output options (behaviour of `SemanticVersion::toString changed!`):
+      + added `SemanticVersion::Format` enum
+      + added `SemanticVersion::toString(Format)` and variants
+      + deprecated `SemanticVersion::getCanonicalForm` and `SemanticVersion::getDescription`
+  * reworking unit tests
+  * included JSemVer library in build configuration
+
 ## v3.1.0
 
   * overloaded methods `SemanticVersion::getDescription` and `SemanticVersion::getCanonicalForm` to optionally exclude build info
+  * reworking unit tests to use [AssertJ](https://github.com/assertj/assertj)
 
 ## v3.0.0
 

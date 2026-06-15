@@ -21,7 +21,10 @@ import java.math.BigInteger;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.regex.qual.Regex;
+
+import static de.bernd_michaely.common.semver.SemanticVersion.Format.*;
 
 /**
  * Utility for semantic versioning.
@@ -32,6 +35,55 @@ import org.checkerframework.checker.regex.qual.Regex;
 public sealed interface SemanticVersion extends Comparable<SemanticVersion>
 	permits DefaultSemanticVersion
 {
+	/**
+	 * Controls the format of String representations of semantic versions.
+	 *
+	 * @since 4.0.0
+	 */
+	enum Format
+	{
+		/**
+		 * A String representation in the canonical form, that is, according to the
+		 * official specification.
+		 */
+		CANONICAL,
+		/**
+		 * A String representation in a deliberate descriptive form. (Don't expect
+		 * the output to be stable over different library versions.)
+		 */
+		VERBOSE,
+		/**
+		 * A String representation showing the structure, in particular of the dot
+		 * separated version parts. (This is mainly intended for testing and
+		 * debugging. Don't expect the output to be stable over different library
+		 * versions.)
+		 */
+		STRUCTURED;
+
+		/**
+		 * Returns the default format for semantic versions.
+		 *
+		 * @return {@link #CANONICAL}
+		 */
+		public static Format getDefaultFormat()
+		{
+			return CANONICAL;
+		}
+
+		/**
+		 * Returns the given format, if not {@code null}, otherwise the default
+		 * format.
+		 *
+		 * @param format the given format
+		 * @return the given format, if not {@code null}, otherwise
+		 *         {@link #getDefaultFormat()}
+		 */
+		public static Format getFormatOrDefault(@Nullable Format format)
+		{
+			return format != null ? format : getDefaultFormat();
+		}
+	}
+
 	/**
 	 * Interface to describe structural parts of the official regular expression
 	 * for semantic versioning.
@@ -271,7 +323,9 @@ public sealed interface SemanticVersion extends Comparable<SemanticVersion>
 	 *
 	 * @return the canonical form of the semantic version
 	 * @see #getCanonicalForm(boolean)
+	 * @deprecated same as {@code toString(CANONICAL)}
 	 */
+	@Deprecated
 	default String getCanonicalForm()
 	{
 		return getCanonicalForm(false);
@@ -283,8 +337,13 @@ public sealed interface SemanticVersion extends Comparable<SemanticVersion>
 	 * @param excludeBuild if true, don't include the build info in the result
 	 * @return the canonical form of the semantic version
 	 * @see #getDescription()
+	 * @deprecated same as {@code toString(CANONICAL, excludeBuild)}
 	 */
-	String getCanonicalForm(boolean excludeBuild);
+	@Deprecated
+	default String getCanonicalForm(boolean excludeBuild)
+	{
+		return toString(CANONICAL, excludeBuild);
+	}
 
 	/**
 	 * Returns a more verbose string than the canonical form. Same as
@@ -292,7 +351,9 @@ public sealed interface SemanticVersion extends Comparable<SemanticVersion>
 	 *
 	 * @return a more verbose string than the canonical form
 	 * @see #getDescription(boolean)
+	 * @deprecated same as {@code toString(VERBOSE)}
 	 */
+	@Deprecated
 	default String getDescription()
 	{
 		return getDescription(false);
@@ -304,6 +365,65 @@ public sealed interface SemanticVersion extends Comparable<SemanticVersion>
 	 * @param excludeBuild if true, don't include the build info in the result
 	 * @return a more verbose string than the canonical form
 	 * @see #getCanonicalForm()
+	 * @deprecated same as {@code toString(VERBOSE, excludeBuild)}
 	 */
-	String getDescription(boolean excludeBuild);
+	@Deprecated
+	default String getDescription(boolean excludeBuild)
+	{
+		return toString(VERBOSE, excludeBuild);
+	}
+
+	/**
+	 * Returns the canonical form of the semantic version. Same as
+	 * {@code toString(CANONICAL, false)}.
+	 *
+	 * @return a String equal to the given initial argument
+	 */
+	@Override
+	public String toString();
+
+	/**
+	 * Returns a String representation of the semantic version in the requested
+	 * format. Same as {@code toString(format, false)}.
+	 *
+	 * @param format the format to use for the generated String ({@code null} for
+	 *               {@link Format#CANONICAL})
+	 *
+	 * @return a String representation of the semantic version in the requested
+	 *         format
+	 * @since 4.0.0
+	 */
+	default String toString(@Nullable Format format)
+	{
+		return toString(format, false);
+	}
+
+	/**
+	 * Returns a String representation of the semantic version in the requested
+	 * format. Same as {@code toString(format, false)}.
+	 *
+	 * @param excludeBuild if true, don't include the build info in the result
+	 *
+	 * @return a String representation of the semantic version in the requested
+	 *         format
+	 * @since 4.0.0
+	 */
+	default String toString(boolean excludeBuild)
+	{
+		return toString(getDefaultFormat(), excludeBuild);
+	}
+
+	/**
+	 * Returns a String representation of the semantic version in the requested
+	 * format.
+	 *
+	 * @param format       the format to use for the generated String
+	 *                     ({@code null} for {@link Format#CANONICAL})
+	 * @param excludeBuild if true, don't include the build info in the result
+	 *
+	 * @return a String representation of the semantic version in the requested
+	 *         format
+	 * @since 4.0.0
+	 */
+	String toString(@Nullable Format format, boolean excludeBuild);
 }

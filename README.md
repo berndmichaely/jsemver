@@ -28,18 +28,25 @@ module de.bernd_michaely.common.semver
 
 ```java
 import de.bernd_michaely.common.semver.*;
+import static de.bernd_michaely.common.semver.SemanticVersion.Format.*;
 
 final var sv = SemanticVersion.of("1.0.0-rc.3+xyz");
 
-System.out.println (sv.getCanonicalForm());
-System.out.println (sv.getDescription());
 System.out.println (sv.toString());
+System.out.println (sv.toString(CANONICAL));
+System.out.println (sv.toString(CANONICAL, true));
+System.out.println (sv.toString(VERBOSE));
+System.out.println (sv.toString(STRUCTURED));
 ```
 
 ###### output:
 
 ```
 1.0.0-rc.3+xyz
+
+1.0.0-rc.3+xyz
+
+1.0.0-rc.3
 
 1.0.0 pre-release »rc.3« build »xyz«
 
@@ -89,9 +96,9 @@ if (ids.size() >= 2 &&
     ids.get(0).equalsIgnoreCase(Identifier.of("RC", Identifier.Type.PRE_RELEASE)) &&
     ids.get(1).isNumeric())
   System.out.println ("%s is release candidate %d.".formatted(
-                      sv.getDescription(), ids.get(1).getOptionalNumber().get()));
+                      sv.toString(VERBOSE), ids.get(1).getOptionalNumber().get()));
 else
-  System.out.println ("%s is not a release candidate.".formatted(sv.getDescription()));
+  System.out.println ("%s is not a release candidate.".formatted(sv.toString(VERBOSE)));
 ```
 
 ###### output:
@@ -107,7 +114,7 @@ void compareSemanticVersions(SemanticVersion sv1, SemanticVersion sv2)
 {
   final int c = sv1.compareTo(sv2);
   final String s = c > 0 ? "greater than" : (c < 0 ? "less than" : "equal to");
-  System.out.println ("'%s' is %s '%s'".formatted(sv1.getDescription(), s, sv2.getDescription()));
+  System.out.println ("'%s' is %s '%s'".formatted(sv1.toString(VERBOSE), s, sv2.toString(VERBOSE)));
 }
 
 compareSemanticVersions(
